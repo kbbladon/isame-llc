@@ -1,0 +1,8 @@
+@use '../../../node_modules/@payloadcms/ui/dist/scss/styles' as *;
+
+
+.admin-bar {
+  @include small-break {
+    display: none;
+  }
+}
