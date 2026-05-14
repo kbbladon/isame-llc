@@ -1,5 +1,4 @@
 import type { GlobalConfig } from 'payload'
-import { link } from '@/fields/link'
 import { revalidateFooter } from './hooks/revalidateFooter'
 import { richTextEditor } from '@/fields/richTextEditor'
 
@@ -19,7 +18,7 @@ export const Footer: GlobalConfig = {
         { label: 'Advanced (multi‑column, rich content)', value: 'advanced' },
       ],
     },
-    // Simple layout fields
+    // Simple layout – localizable navigation links
     {
       name: 'navItems',
       type: 'array',
@@ -31,9 +30,24 @@ export const Footer: GlobalConfig = {
         },
       },
       fields: [
-        link({
-          appearances: false,
-        }),
+        {
+          name: 'label',
+          type: 'text',
+          label: 'Link Label',
+          required: true,
+          localized: true,
+        },
+        {
+          name: 'url',
+          type: 'text',
+          label: 'URL',
+        },
+        {
+          name: 'newTab',
+          type: 'checkbox',
+          label: 'Open in new tab',
+          defaultValue: false,
+        },
       ],
       maxRows: 6,
     },
@@ -52,6 +66,7 @@ export const Footer: GlobalConfig = {
       type: 'richText',
       label: 'Description Text',
       editor: richTextEditor,
+      localized: true,
       admin: {
         condition: (_, siblingData) => siblingData?.layout === 'advanced',
       },
@@ -91,21 +106,25 @@ export const Footer: GlobalConfig = {
           type: 'text',
           label: 'Heading',
           defaultValue: 'Reach Us',
+          localized: true,
         },
         {
           name: 'phone',
           type: 'text',
           label: 'Phone Number',
+          localized: true,
         },
         {
           name: 'email',
           type: 'text',
           label: 'Email Address',
+          localized: true,
         },
         {
           name: 'hours',
           type: 'text',
           label: 'Business Hours',
+          localized: true,
         },
         {
           name: 'partnerHotel',
@@ -117,6 +136,7 @@ export const Footer: GlobalConfig = {
               type: 'text',
               label: 'Label Text',
               defaultValue: 'Book a room at our Flagship Hotel.',
+              localized: true,
             },
             {
               name: 'logo',
@@ -153,6 +173,7 @@ export const Footer: GlobalConfig = {
       type: 'text',
       label: 'Copyright Text',
       defaultValue: 'Copyright © 2026 Mata Rocks Resort. All Rights Reserved. Belize.',
+      localized: true,
       admin: {
         condition: (_, siblingData) => siblingData?.layout === 'advanced',
       },

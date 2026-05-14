@@ -28,6 +28,7 @@ export const hero: Field = {
       type: 'richText',
       label: 'Gradient Hero Title (Rich Text)',
       editor: richTextEditor,
+      localized: true,
       admin: {
         condition: (_, siblingData) => siblingData?.type === 'lowGradient',
       },
@@ -36,6 +37,7 @@ export const hero: Field = {
       name: 'gradientSubtitle',
       type: 'text',
       label: 'Gradient Hero Subtitle (optional)',
+      localized: true,
       admin: {
         condition: (_, siblingData) => siblingData?.type === 'lowGradient',
       },
@@ -85,6 +87,7 @@ export const hero: Field = {
       name: 'richText',
       type: 'richText',
       editor: richTextEditor,
+      localized: true,
       admin: {
         condition: (_, { type } = {}) => type !== 'slider',
       },
@@ -143,6 +146,7 @@ export const hero: Field = {
               type: 'richText',
               label: 'Overlay Text (Rich Text)',
               editor: richTextEditor,
+              localized: true,
               admin: {
                 description: 'Use the toolbar to add formatted text and colors.',
               },
@@ -151,6 +155,7 @@ export const hero: Field = {
               name: 'cta',
               type: 'group',
               label: 'Call To Action',
+              localized: true,
               fields: [
                 { name: 'label', type: 'text', defaultValue: 'Learn More' },
                 { name: 'url', type: 'text' },
@@ -218,7 +223,7 @@ export const hero: Field = {
               type: 'text',
               defaultValue: '#000000',
               admin: {
-                components: { Field: '@/components/ColorPicker' } as any,
+                components: { Field: '@/components/ThemeColorPicker' },
               },
             },
           ],

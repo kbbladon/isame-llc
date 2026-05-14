@@ -21,6 +21,7 @@ export const Banner: Block = {
       type: 'richText',
       editor: richTextEditor, // ✅ use central config
       required: true,
+      localized: true,
     },
   ],
   interfaceName: 'BannerBlock',

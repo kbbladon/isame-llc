@@ -61,7 +61,7 @@ export const ParallaxHero: Block = {
           admin: {
             placeholder: 'rgba(3, 11, 13, 0.9)',
             components: {
-              Field: '@/components/ColorPicker',
+              Field: '@/components/ThemeColorPicker',
             } as any,
           },
         },
@@ -73,7 +73,7 @@ export const ParallaxHero: Block = {
           admin: {
             placeholder: 'rgba(3, 11, 13, 0.3)',
             components: {
-              Field: '@/components/ColorPicker',
+              Field: '@/components/ThemeColorPicker',
             } as any,
           },
         },

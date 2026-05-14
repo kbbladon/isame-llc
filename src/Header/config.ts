@@ -1,6 +1,4 @@
 import type { GlobalConfig } from 'payload'
-
-import { link } from '@/fields/link'
 import { revalidateHeader } from './hooks/revalidateHeader'
 
 export const Header: GlobalConfig = {
@@ -13,9 +11,24 @@ export const Header: GlobalConfig = {
       name: 'navItems',
       type: 'array',
       fields: [
-        link({
-          appearances: false,
-        }),
+        {
+          name: 'label',
+          type: 'text',
+          required: true,
+          localized: true, // ✅ label is translatable
+          label: 'Link Label',
+        },
+        {
+          name: 'url',
+          type: 'text',
+          label: 'URL',
+        },
+        {
+          name: 'newTab',
+          type: 'checkbox',
+          label: 'Open in new tab',
+          defaultValue: false,
+        },
       ],
       maxRows: 6,
       admin: {

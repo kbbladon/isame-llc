@@ -11,6 +11,7 @@ export const CallToAction: Block = {
       type: 'richText',
       editor: richTextEditor,
       label: false,
+      localized: true,
     },
     linkGroup({
       appearances: ['default', 'outline'],

@@ -13,6 +13,7 @@ export const CrossSectionCTA: Block = {
       type: 'richText',
       label: 'Section Heading (optional)',
       editor: richTextEditor,
+      localized: true,
     },
     {
       name: 'items',
@@ -44,12 +45,14 @@ export const CrossSectionCTA: Block = {
           type: 'text',
           label: 'Title Prefix (e.g., "01 / ")',
           defaultValue: '',
+          localized: true,
         },
         {
           name: 'title',
           type: 'text',
           label: 'Title',
           required: true,
+          localized: true,
         },
         {
           name: 'description',
@@ -57,6 +60,7 @@ export const CrossSectionCTA: Block = {
           label: 'Description',
           editor: richTextEditor,
           required: true,
+          localized: true,
         },
         {
           name: 'link',

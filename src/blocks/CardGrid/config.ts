@@ -80,6 +80,7 @@ export const CardGrid: Block = {
           name: 'richDescription',
           type: 'richText',
           editor: richTextEditor,
+          localized: true,
         },
         {
           name: 'price',
@@ -96,16 +97,19 @@ export const CardGrid: Block = {
           relationTo: 'media',
           required: true,
           label: 'Card Image',
+          localized: true,
         },
         {
           name: 'features',
           type: 'array',
           label: 'Feature List',
+          localized: true,
           fields: [
             {
               name: 'text',
               type: 'text',
               label: 'Feature Item',
+              localized: true,
             },
           ],
         },
@@ -113,12 +117,14 @@ export const CardGrid: Block = {
           name: 'cta',
           type: 'group',
           label: 'Call to Action',
+          localized: true,
           fields: [
             {
               name: 'label',
               type: 'text',
               defaultValue: 'View Details',
               label: 'Button Text',
+              localized: true,
             },
             {
               name: 'type',
@@ -162,6 +168,7 @@ export const CardGrid: Block = {
       type: 'checkbox',
       label: 'Enable Footer Call to Action',
       defaultValue: false,
+      localized: true,
     },
     {
       name: 'footerCta',
@@ -176,18 +183,21 @@ export const CardGrid: Block = {
           type: 'text',
           defaultValue: 'View All Rooms',
           required: true,
+          localized: true,
         },
         {
           name: 'link',
           type: 'text',
           required: true,
           label: 'Link URL',
+          localized: true,
         },
         {
           name: 'newTab',
           type: 'checkbox',
           label: 'Open in new tab',
           defaultValue: false,
+          localized: true,
         },
       ],
     },

@@ -1,7 +1,8 @@
 {
-  "name": "matarocks-next",
+  "name": "isame",
   "version": "1.0.0",
-  "description": "Website template for Payload",
+  "description": "Isame Credit Collection Ltd.",
+  "author": "Kenneth Bladon",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -70,6 +71,7 @@
     "payload-storage-cloudinary": "^1.2.1",
     "prism-react-renderer": "^2.3.1",
     "react": "19.2.4",
+    "react-colorful": "^5.7.0",
     "react-dom": "19.2.4",
     "react-hook-form": "7.71.1",
     "sharp": "0.34.2",

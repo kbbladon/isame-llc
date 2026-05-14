@@ -98,8 +98,8 @@ export const Pages: CollectionConfig<'pages'> = {
                   defaultValue: '#0f3d2e',
                   admin: {
                     components: {
-                      Field: '@/components/ColorPicker',
-                    } as any,
+                      /*Field: '@/components/ColorPicker'*/
+                    },
                     description: 'Applied as a transparent overlay over the background image.',
                   },
                 },

@@ -13,11 +13,13 @@ export const MenuTabs: Block = {
       type: 'richText',
       label: 'Section Heading (rich text)',
       editor: richTextEditor,
+      localized: true,
     },
     {
       name: 'tabs',
       type: 'array',
       label: 'Tabs',
+      localized: true,
       minRows: 1,
       fields: [
         {
@@ -25,22 +27,26 @@ export const MenuTabs: Block = {
           type: 'text',
           label: 'Tab Name',
           required: true,
+          localized: true,
         },
         {
           name: 'items',
           type: 'array',
           label: 'Menu Items',
+          localized: true,
           fields: [
             {
               name: 'title',
               type: 'text',
               label: 'Item Name',
               required: true,
+              localized: true,
             },
             {
               name: 'description',
               type: 'text',
               label: 'Description (optional)',
+              localized: true,
             },
             {
               name: 'price',

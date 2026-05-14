@@ -33,6 +33,7 @@ export const Cards: Block = {
           type: 'text',
           label: 'Button Label',
           defaultValue: 'Read More',
+          localized: true,
         },
         {
           name: 'buttonLink',
@@ -52,6 +53,7 @@ export const Cards: Block = {
           label: 'Card Content (Title & Description)',
           required: true,
           editor: richTextEditor,
+          localized: true,
           admin: {
             description: 'Use the toolbar to format title and description freely.',
           },
@@ -97,7 +99,7 @@ export const Cards: Block = {
       label: 'Background Color',
       defaultValue: '#051114',
       admin: {
-        components: { Field: '@/components/ColorPicker' } as any,
+        components: { Field: '@/components/ThemeColorPicker' },
       },
     },
     {

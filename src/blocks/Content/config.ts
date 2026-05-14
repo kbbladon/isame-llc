@@ -19,6 +19,7 @@ const columnFields: Field[] = [
     type: 'richText',
     editor: richTextEditor,
     label: false,
+    localized: true,
   },
   {
     name: 'enableLink',

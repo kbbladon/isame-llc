@@ -102,7 +102,7 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'es') | ('en' | 'es')[];
   globals: {
     header: Header;
     footer: Footer;
@@ -113,7 +113,7 @@ export interface Config {
     footer: FooterSelect<false> | FooterSelect<true>;
     settings: SettingsSelect<false> | SettingsSelect<true>;
   };
-  locale: null;
+  locale: 'en' | 'es';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -2622,21 +2622,9 @@ export interface Header {
   id: string;
   navItems?:
     | {
-        link: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: string | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: string | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-        };
+        label: string;
+        url?: string | null;
+        newTab?: boolean | null;
         id?: string | null;
       }[]
     | null;
@@ -2652,21 +2640,9 @@ export interface Footer {
   layout?: ('simple' | 'advanced') | null;
   navItems?:
     | {
-        link: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: string | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: string | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-        };
+        label: string;
+        url?: string | null;
+        newTab?: boolean | null;
         id?: string | null;
       }[]
     | null;
@@ -2719,6 +2695,10 @@ export interface Footer {
  */
 export interface Setting {
   id: string;
+  /**
+   * Sets default colours and fonts for the entire site. Each field below can still be overridden.
+   */
+  themePreset?: ('isame' | 'luxury' | 'elegant' | 'minimal' | 'caribbean') | null;
   branding: {
     logo: string | Media;
     /**
@@ -2743,80 +2723,11 @@ export interface Setting {
    * Separate keywords with commas
    */
   keywords?: string | null;
-  /**
-   * e.g., +1 (501) 226-2345 (Leave blank to hide)
-   */
-  phoneNumber?: string | null;
-  navItems?:
-    | {
-        parentLink: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: string | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: string | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-        };
-        /**
-         * Add sub‑links to create a dropdown menu.
-         */
-        children?:
-          | {
-              childLink: {
-                type?: ('reference' | 'custom') | null;
-                newTab?: boolean | null;
-                reference?:
-                  | ({
-                      relationTo: 'pages';
-                      value: string | Page;
-                    } | null)
-                  | ({
-                      relationTo: 'posts';
-                      value: string | Post;
-                    } | null);
-                url?: string | null;
-                label: string;
-              };
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  ctaButton: {
-    ctaLink: {
-      type?: ('reference' | 'custom') | null;
-      newTab?: boolean | null;
-      reference?:
-        | ({
-            relationTo: 'pages';
-            value: string | Page;
-          } | null)
-        | ({
-            relationTo: 'posts';
-            value: string | Post;
-          } | null);
-      url?: string | null;
-      label: string;
-    };
-  };
-  /**
-   * Overlay applied before the user scrolls.
-   */
-  headerGradient?: string | null;
-  headerOverlayOpacity?: number | null;
-  colors: {
-    primaryColor: string;
-    secondaryColor: string;
-    linkColor: string;
-    bodyBgColor: string;
+  colors?: {
+    primaryColor?: string | null;
+    secondaryColor?: string | null;
+    linkColor?: string | null;
+    bodyBgColor?: string | null;
   };
   /**
    * Used on pages that do not specify their own background image.
@@ -2835,7 +2746,6 @@ export interface Setting {
    */
   defaultContentWidth?: ('contained' | 'full') | null;
   typography?: {
-    fontPreset?: ('luxury' | 'elegant' | 'minimal' | 'caribbean' | 'baskervvillePrompt') | null;
     headingFontFamily?: string | null;
     bodyFontFamily?: string | null;
     h1FontSize?: string | null;
@@ -2891,15 +2801,9 @@ export interface HeaderSelect<T extends boolean = true> {
   navItems?:
     | T
     | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-            };
+        label?: T;
+        url?: T;
+        newTab?: T;
         id?: T;
       };
   updatedAt?: T;
@@ -2915,15 +2819,9 @@ export interface FooterSelect<T extends boolean = true> {
   navItems?:
     | T
     | {
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-            };
+        label?: T;
+        url?: T;
+        newTab?: T;
         id?: T;
       };
   logo?: T;
@@ -2962,6 +2860,7 @@ export interface FooterSelect<T extends boolean = true> {
  * via the `definition` "settings_select".
  */
 export interface SettingsSelect<T extends boolean = true> {
+  themePreset?: T;
   branding?:
     | T
     | {
@@ -2984,50 +2883,6 @@ export interface SettingsSelect<T extends boolean = true> {
         image?: T;
       };
   keywords?: T;
-  phoneNumber?: T;
-  navItems?:
-    | T
-    | {
-        parentLink?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-            };
-        children?:
-          | T
-          | {
-              childLink?:
-                | T
-                | {
-                    type?: T;
-                    newTab?: T;
-                    reference?: T;
-                    url?: T;
-                    label?: T;
-                  };
-              id?: T;
-            };
-        id?: T;
-      };
-  ctaButton?:
-    | T
-    | {
-        ctaLink?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-            };
-      };
-  headerGradient?: T;
-  headerOverlayOpacity?: T;
   colors?:
     | T
     | {
@@ -3043,7 +2898,6 @@ export interface SettingsSelect<T extends boolean = true> {
   typography?:
     | T
     | {
-        fontPreset?: T;
         headingFontFamily?: T;
         bodyFontFamily?: T;
         h1FontSize?: T;

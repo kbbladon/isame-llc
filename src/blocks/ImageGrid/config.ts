@@ -30,11 +30,13 @@ export const ImageGrid: Block = {
           type: 'richText',
           label: 'Rich Content (above title)',
           editor: richTextEditor,
+          localized: true,
         },
         {
           name: 'title',
           type: 'text',
           label: 'Item Title (optional)',
+          localized: true,
         },
         {
           name: 'image',
@@ -53,6 +55,7 @@ export const ImageGrid: Block = {
           type: 'text',
           label: 'Button Label',
           defaultValue: 'Learn More',
+          localized: true,
         },
         {
           name: 'newTab',

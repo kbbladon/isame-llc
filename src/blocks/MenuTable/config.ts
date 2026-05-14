@@ -13,12 +13,14 @@ export const MenuTable: Block = {
       type: 'richText',
       label: 'Section Heading (optional)',
       editor: richTextEditor,
+      localized: true,
     },
     {
       name: 'subheading',
       type: 'richText',
       label: 'Section Subheading (optional)',
       editor: richTextEditor,
+      localized: true,
     },
     {
       name: 'categories',
@@ -31,6 +33,7 @@ export const MenuTable: Block = {
           type: 'text',
           label: 'Tab Label',
           required: true,
+          localized: true,
         },
         {
           name: 'sections',
@@ -44,6 +47,7 @@ export const MenuTable: Block = {
               type: 'richText',
               label: 'Section Heading (optional)',
               editor: richTextEditor,
+              localized: true,
             },
             {
               name: 'menuItems',
@@ -57,12 +61,14 @@ export const MenuTable: Block = {
                   label: 'Item Name',
                   required: true,
                   editor: richTextEditor,
+                  localized: true,
                 },
                 {
                   name: 'description',
                   type: 'richText',
                   label: 'Description',
                   editor: richTextEditor,
+                  localized: true,
                 },
                 {
                   name: 'price',

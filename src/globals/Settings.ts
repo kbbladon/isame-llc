@@ -1,10 +1,31 @@
 import type { GlobalConfig } from 'payload'
-import { link } from '@/fields/link'
+import { link } from '../fields/link' // ✅ relative path
 
 export const Settings: GlobalConfig = {
   slug: 'settings',
   label: 'Site Settings',
   fields: [
+    // ==========================================
+    // 🌈 THEME PRESET – single source of truth
+    // ==========================================
+    {
+      name: 'themePreset',
+      type: 'select',
+      label: 'Visual Theme',
+      defaultValue: 'isame',
+      options: [
+        { label: 'Isame Collection', value: 'isame' },
+        { label: 'Luxury Tropical', value: 'luxury' },
+        { label: 'Elegant Resort', value: 'elegant' },
+        { label: 'Modern Minimal', value: 'minimal' },
+        { label: 'Caribbean Vibrant', value: 'caribbean' },
+      ],
+      admin: {
+        description:
+          'Sets default colours and fonts for the entire site. Each field below can still be overridden.',
+      },
+    },
+
     // ==========================================
     // 1. BRAND IDENTITY
     // ==========================================
@@ -32,7 +53,9 @@ export const Settings: GlobalConfig = {
                   type: 'upload',
                   relationTo: 'media',
                   label: 'Logo (Dark Background)',
-                  admin: { description: 'Optional. Used on transparent/dark sections.' },
+                  admin: {
+                    description: 'Optional. Used on transparent/dark sections.',
+                  },
                 },
               ],
             },
@@ -117,6 +140,10 @@ export const Settings: GlobalConfig = {
         },
       ],
     },
+
+    // ==========================================
+    // GLOBAL SEO
+    // ==========================================
     {
       type: 'collapsible',
       label: '🔍 Global SEO',
@@ -125,99 +152,37 @@ export const Settings: GlobalConfig = {
           name: 'defaultSeo',
           type: 'group',
           fields: [
-            { name: 'title', type: 'text', label: 'Default Meta Title' },
-            { name: 'description', type: 'textarea', label: 'Default Meta Description' },
-            { name: 'image', type: 'upload', relationTo: 'media', label: 'Default OG Image' },
+            { name: 'title', type: 'text', label: 'Default Meta Title', localized: true },
+            {
+              name: 'description',
+              type: 'textarea',
+              label: 'Default Meta Description',
+              localized: true,
+            },
+            {
+              name: 'image',
+              type: 'upload',
+              relationTo: 'media',
+              label: 'Default OG Image',
+            },
           ],
         },
         {
           name: 'keywords',
           type: 'text',
           label: 'Meta Keywords (comma separated)',
+          localized: true,
           admin: { description: 'Separate keywords with commas' },
         },
       ],
     },
+
     // ==========================================
     // 2. HEADER & NAVIGATION
     // ==========================================
-    {
-      type: 'collapsible',
-      label: '⚓ Navigation & Header Layout',
-      fields: [
-        {
-          name: 'phoneNumber',
-          type: 'text',
-          label: 'Header Phone Number',
-          admin: { description: 'e.g., +1 (501) 226-2345 (Leave blank to hide)' },
-        },
-        {
-          name: 'navItems',
-          type: 'array',
-          label: 'Navigation Menu Links',
-          labels: { singular: 'Link', plural: 'Links' },
-          fields: [
-            link({
-              appearances: false,
-              overrides: { name: 'parentLink', label: 'Link', required: true },
-            }),
-            {
-              name: 'children',
-              type: 'array',
-              label: 'Dropdown Items (optional)',
-              fields: [
-                link({
-                  appearances: false,
-                  overrides: { name: 'childLink', label: 'Child Link', required: true },
-                }),
-              ],
-              admin: { description: 'Add sub‑links to create a dropdown menu.' },
-            },
-          ],
-          admin: {
-            initCollapsed: true,
-            components: { RowLabel: '@/Header/RowLabel#RowLabel' },
-          },
-        },
-        {
-          name: 'ctaButton',
-          type: 'group',
-          label: 'Navigation Action Button (CTA)',
-          fields: [
-            link({
-              appearances: false,
-              overrides: { name: 'ctaLink', label: 'CTA Button' },
-            }),
-          ],
-        },
-        {
-          type: 'collapsible',
-          label: 'Header Visual Effects',
-          admin: { initCollapsed: true },
-          fields: [
-            {
-              name: 'headerGradient',
-              type: 'text',
-              label: 'Transparent Header Gradient',
-              defaultValue:
-                'linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0.6), transparent)',
-              admin: { description: 'Overlay applied before the user scrolls.' },
-            },
-            {
-              name: 'headerOverlayOpacity',
-              type: 'number',
-              label: 'Gradient Opacity',
-              defaultValue: 0.9,
-              min: 0,
-              max: 1,
-              admin: { step: 0.1 },
-            },
-          ],
-        },
-      ],
-    },
+
     // ==========================================
-    // 3. GLOBAL COLORS
+    // 3. GLOBAL COLOURS – ThemeColorPicker on every field
     // ==========================================
     {
       type: 'collapsible',
@@ -235,17 +200,21 @@ export const Settings: GlobalConfig = {
                   name: 'primaryColor',
                   type: 'text',
                   label: 'Primary Color',
-                  required: true,
-                  defaultValue: '#FFD700',
-                  admin: { components: { Field: '@/components/ColorPicker' } as any },
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeColorPicker#default',
+                    },
+                  },
                 },
                 {
                   name: 'secondaryColor',
                   type: 'text',
                   label: 'Secondary Color',
-                  required: true,
-                  defaultValue: '#E6B800',
-                  admin: { components: { Field: '@/components/ColorPicker' } as any },
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeColorPicker#default',
+                    },
+                  },
                 },
               ],
             },
@@ -256,17 +225,21 @@ export const Settings: GlobalConfig = {
                   name: 'linkColor',
                   type: 'text',
                   label: 'Link Color',
-                  required: true,
-                  defaultValue: '#FFD700',
-                  admin: { components: { Field: '@/components/ColorPicker' } as any },
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeColorPicker#default',
+                    },
+                  },
                 },
                 {
                   name: 'bodyBgColor',
                   type: 'text',
                   label: 'Site Background Color',
-                  required: true,
-                  defaultValue: '#0a0a0a',
-                  admin: { components: { Field: '@/components/ColorPicker' } as any },
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeColorPicker#default',
+                    },
+                  },
                 },
               ],
             },
@@ -274,6 +247,7 @@ export const Settings: GlobalConfig = {
         },
       ],
     },
+
     // ==========================================
     // 🌍 GLOBAL PAGE BACKGROUND DEFAULTS
     // ==========================================
@@ -286,15 +260,18 @@ export const Settings: GlobalConfig = {
           type: 'upload',
           relationTo: 'media',
           label: 'Default Background Image',
-          admin: { description: 'Used on pages that do not specify their own background image.' },
+          admin: {
+            description: 'Used on pages that do not specify their own background image.',
+          },
         },
         {
           name: 'defaultOverlayColor',
           type: 'text',
           label: 'Default Overlay Color',
-          defaultValue: '#0f3d2e',
           admin: {
-            components: { Field: '@/components/ColorPicker' } as any,
+            components: {
+              Field: '@/components/ThemeColorPicker#default',
+            },
             description: 'Overlay colour for the default background.',
           },
         },
@@ -313,15 +290,21 @@ export const Settings: GlobalConfig = {
           label: 'Default Content Width',
           defaultValue: 'contained',
           options: [
-            { label: 'Contained (max-width, centered)', value: 'contained' },
+            {
+              label: 'Contained (max-width, centered)',
+              value: 'contained',
+            },
             { label: 'Full Width (edge to edge)', value: 'full' },
           ],
-          admin: { description: 'Used when a page does not specify its own content width.' },
+          admin: {
+            description: 'Used when a page does not specify its own content width.',
+          },
         },
       ],
     },
+
     // ==========================================
-    // 4. GLOBAL TYPOGRAPHY
+    // 4. GLOBAL TYPOGRAPHY – ThemeFontPicker on every font field
     // ==========================================
     {
       type: 'collapsible',
@@ -333,23 +316,28 @@ export const Settings: GlobalConfig = {
           label: false,
           fields: [
             {
-              name: 'fontPreset',
-              type: 'select',
-              label: 'Visual Font Theme',
-              defaultValue: 'luxury',
-              options: [
-                { label: 'Luxury Tropical (Clean & Modern)', value: 'luxury' },
-                { label: 'Elegant Resort (Editorial Luxury)', value: 'elegant' },
-                { label: 'Modern Minimal (SaaS Vibe)', value: 'minimal' },
-                { label: 'Caribbean Personality (Vibrant Island)', value: 'caribbean' },
-                { label: '⭐ Mata Rocks (Baskervville + Prompt)', value: 'baskervvillePrompt' },
-              ],
-            },
-            {
               type: 'row',
               fields: [
-                { name: 'headingFontFamily', type: 'text', label: 'Custom Heading Font' },
-                { name: 'bodyFontFamily', type: 'text', label: 'Custom Body Font' },
+                {
+                  name: 'headingFontFamily',
+                  type: 'text',
+                  label: 'Heading Font',
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeFontPicker#default',
+                    },
+                  },
+                },
+                {
+                  name: 'bodyFontFamily',
+                  type: 'text',
+                  label: 'Body Font',
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeFontPicker#default',
+                    },
+                  },
+                },
               ],
             },
             {
@@ -374,7 +362,11 @@ export const Settings: GlobalConfig = {
                 {
                   type: 'row',
                   fields: [
-                    { name: 'h3FontSize', type: 'text', defaultValue: '1.75rem' },
+                    {
+                      name: 'h3FontSize',
+                      type: 'text',
+                      defaultValue: '1.75rem',
+                    },
                     { name: 'h3FontWeight', type: 'text', defaultValue: '600' },
                   ],
                 },
@@ -391,8 +383,9 @@ export const Settings: GlobalConfig = {
         },
       ],
     },
+
     // ==========================================
-    // 5. COMPONENT SPECIFIC: HERO & BUTTONS
+    // 5. COMPONENT STYLINGS – hero fonts & buttons
     // ==========================================
     {
       type: 'collapsible',
@@ -410,13 +403,21 @@ export const Settings: GlobalConfig = {
                   name: 'headingFontFamily',
                   type: 'text',
                   label: 'Headline Font',
-                  defaultValue: 'Baskervville, serif',
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeFontPicker#default',
+                    },
+                  },
                 },
                 {
                   name: 'subheadingFontFamily',
                   type: 'text',
                   label: 'Subtitle Font',
-                  defaultValue: 'Prompt, sans-serif',
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeFontPicker#default',
+                    },
+                  },
                 },
               ],
             },
@@ -433,14 +434,22 @@ export const Settings: GlobalConfig = {
                 {
                   name: 'buttonBgColor',
                   type: 'text',
-                  defaultValue: '#FFD700',
-                  admin: { components: { Field: '@/components/ColorPicker' } as any },
+                  label: 'Button Background',
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeColorPicker#default',
+                    },
+                  },
                 },
                 {
                   name: 'buttonTextColor',
                   type: 'text',
-                  defaultValue: '#000000',
-                  admin: { components: { Field: '@/components/ColorPicker' } as any },
+                  label: 'Button Text Color',
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeColorPicker#default',
+                    },
+                  },
                 },
               ],
             },
@@ -450,14 +459,22 @@ export const Settings: GlobalConfig = {
                 {
                   name: 'buttonHoverBgColor',
                   type: 'text',
-                  defaultValue: '#E6B800',
-                  admin: { components: { Field: '@/components/ColorPicker' } as any },
+                  label: 'Button Hover Background',
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeColorPicker#default',
+                    },
+                  },
                 },
                 {
                   name: 'buttonHoverTextColor',
                   type: 'text',
-                  defaultValue: '#000000',
-                  admin: { components: { Field: '@/components/ColorPicker' } as any },
+                  label: 'Button Hover Text Color',
+                  admin: {
+                    components: {
+                      Field: '@/components/ThemeColorPicker#default',
+                    },
+                  },
                 },
               ],
             },
@@ -471,8 +488,9 @@ export const Settings: GlobalConfig = {
         },
       ],
     },
+
     // ==========================================
-    // 6. TRACKING & ANALYTICS
+    // 6. TRACKING & ANALYTICS (completely unchanged)
     // ==========================================
     {
       type: 'collapsible',
@@ -496,7 +514,10 @@ export const Settings: GlobalConfig = {
               name: 'googleTagManagerId',
               type: 'text',
               label: 'Google Tag Manager ID',
-              admin: { placeholder: 'GTM-XXXXXX', description: 'Container ID (starts with GTM-)' },
+              admin: {
+                placeholder: 'GTM-XXXXXX',
+                description: 'Container ID (starts with GTM-)',
+              },
             },
             {
               name: 'metaPixelId',

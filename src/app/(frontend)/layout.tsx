@@ -12,13 +12,13 @@ import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { fontMap } from '@/lib/fonts'
+import { THEME_PRESETS } from '@/theme/themePresets' // 👈 theme presets
 import ThemeInit from '@/components/ThemeInit'
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 import { SiteSettingsProvider } from '@/providers/SiteSettingsProvider'
 
-// Load fonts
+// Preload all possible font families as CSS variables (fallback)
 const baskervville = Baskervville({
   weight: '400',
   subsets: ['latin'],
@@ -43,10 +43,9 @@ const poppins = Poppins({
   display: 'swap',
 })
 
-// Helper to safely extract URL from media field
+// Helper to extract media URL
 const getMediaUrl = (media: any): string | null => {
-  if (!media) return null
-  if (typeof media === 'string') return null
+  if (!media || typeof media === 'string') return null
   return media.url || null
 }
 
@@ -55,13 +54,28 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const payload = await getPayload({ config })
   const settings = await payload.findGlobal({ slug: 'settings' })
   const footer = await payload.findGlobal({ slug: 'footer' })
-  const fontPreset = settings?.typography?.fontPreset || 'luxury'
-  const fonts = fontMap[fontPreset as keyof typeof fontMap] ?? fontMap.luxury
-  const bodyBgColor = settings?.colors?.bodyBgColor || '#FFFFFF'
-  const heroHeadingFont = settings?.hero?.headingFontFamily || 'Baskervville, serif'
-  const heroSubheadingFont = settings?.hero?.subheadingFontFamily || 'Prompt, sans-serif'
 
-  // Favicon URLs
+  // ----- THEME PRESET -----
+  const themePreset = settings?.themePreset || 'isame'
+  const preset = THEME_PRESETS[themePreset as keyof typeof THEME_PRESETS] ?? THEME_PRESETS.isame
+
+  // ----- FONT FAMILIES (with overrides) -----
+  const headingFont =
+    settings?.typography?.headingFontFamily ||
+    preset?.typography?.headingFont ||
+    'Playfair Display, serif'
+  const bodyFont =
+    settings?.typography?.bodyFontFamily || preset?.typography?.bodyFont || 'Inter, sans-serif'
+  const heroHeadingFont = settings?.hero?.headingFontFamily || headingFont
+  const heroSubheadingFont = settings?.hero?.subheadingFontFamily || bodyFont
+
+  // ----- COLOURS (with overrides) -----
+  const primaryColor = settings?.colors?.primaryColor || preset?.colors?.primary || '#D4AF37'
+  const secondaryColor = settings?.colors?.secondaryColor || preset?.colors?.secondary || '#A7A9AC'
+  const linkColor = settings?.colors?.linkColor || preset?.colors?.link || '#D4AF37'
+  const bodyBgColor = settings?.colors?.bodyBgColor || preset?.colors?.background || '#1A1A1A'
+
+  // ----- FAVICONS -----
   const favicon = getMediaUrl(settings?.branding?.favicon)
   const favicon16 = getMediaUrl(settings?.branding?.favicon16)
   const appleTouchIcon = getMediaUrl(settings?.branding?.appleTouchIcon)
@@ -69,7 +83,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const androidChrome512 = getMediaUrl(settings?.branding?.androidChrome512)
   const manifest = getMediaUrl(settings?.branding?.manifest)
 
-  // Tracking & Analytics
+  // ----- TRACKING & ANALYTICS -----
   const tracking = settings?.tracking || {}
   const googleAnalyticsId = tracking.googleAnalyticsId
   const googleTagManagerId = tracking.googleTagManagerId
@@ -77,9 +91,26 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const customHeadScripts = tracking.customHeadScripts
   const customBodyScripts = tracking.customBodyScripts
 
+  // ----- CSS VARIABLES TO INJECT -----
+  const cssVars: Record<string, string> = {
+    '--font-heading': headingFont,
+    '--font-body': bodyFont,
+    '--hero-heading-font': heroHeadingFont,
+    '--hero-subheading-font': heroSubheadingFont,
+    '--color-primary': primaryColor,
+    '--color-secondary': secondaryColor,
+    '--color-link': linkColor,
+    '--bg-body': bodyBgColor,
+  }
+
+  // ----- UNIQUE GOOGLE FONTS TO LOAD -----
+  const fontFamilies = [headingFont, bodyFont, heroHeadingFont, heroSubheadingFont]
+    .map((f) => f.split(',')[0].trim())
+    .filter((f) => f.includes(' ')) // only Google Fonts with space
+    .filter((v, i, a) => a.indexOf(v) === i) // unique
+
+  // Static font class names (for CSS variable fallback)
   const fontClasses = cn(
-    fonts.heading.variable,
-    fonts.body.variable,
     baskervville.variable,
     prompt.variable,
     playfair.variable,
@@ -91,17 +122,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       className={fontClasses}
       lang="en"
       suppressHydrationWarning
-      style={
-        {
-          '--font-heading': `var(${fonts.heading.variable})`,
-          '--font-body': `var(${fonts.body.variable})`,
-          '--hero-heading-font': heroHeadingFont,
-          '--hero-subheading-font': heroSubheadingFont,
-        } as React.CSSProperties
-      }
+      style={{ ...cssVars } as React.CSSProperties}
     >
       <head>
-        {/* Preconnects */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
@@ -117,33 +140,29 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
         {manifest && <link rel="manifest" href={manifest} />}
 
-        {/* Google Fonts loader */}
+        {/* Dynamic Google Fonts Loader */}
         <Script
           id="google-fonts-loader"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                function loadFont(family) {
-                  if (!family || family.includes(' ')) return;
-                  const firstFont = family.split(',')[0].trim();
-                  if (!firstFont.includes(' ')) return;
-                  const link = document.createElement('link');
-                  link.href = 'https://fonts.googleapis.com/css2?family=' + encodeURIComponent(firstFont) + ':wght@400;500;600;700&display=swap';
+                var fonts = ${JSON.stringify(fontFamilies)};
+                fonts.forEach(function(family) {
+                  if (!family) return;
+                  var link = document.createElement('link');
+                  link.href = 'https://fonts.googleapis.com/css2?family=' +
+                    encodeURIComponent(family) +
+                    ':wght@400;500;600;700&display=swap';
                   link.rel = 'stylesheet';
                   document.head.appendChild(link);
-                }
-                const rootStyles = getComputedStyle(document.documentElement);
-                const headingFont = rootStyles.getPropertyValue('--hero-heading-font');
-                const subheadingFont = rootStyles.getPropertyValue('--hero-subheading-font');
-                loadFont(headingFont);
-                loadFont(subheadingFont);
+                });
               })();
             `,
           }}
         />
 
-        {/* Google Analytics (GA4) */}
+        {/* Google Analytics */}
         {googleAnalyticsId && (
           <>
             <script
@@ -152,12 +171,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             />
             <script
               dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${googleAnalyticsId}');
-                `,
+                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${googleAnalyticsId}');`,
               }}
             />
           </>
@@ -167,13 +181,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {googleTagManagerId && (
           <script
             dangerouslySetInnerHTML={{
-              __html: `
-                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                })(window,document,'script','dataLayer','${googleTagManagerId}');
-              `,
+              __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${googleTagManagerId}');`,
             }}
           />
         )}
@@ -182,18 +190,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {metaPixelId && (
           <script
             dangerouslySetInnerHTML={{
-              __html: `
-                !function(f,b,e,v,n,t,s)
-                {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-                n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-                if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                n.queue=[];t=b.createElement(e);t.async=!0;
-                t.src=v;s=b.getElementsByTagName(e)[0];
-                s.parentNode.insertBefore(t,s)}(window, document,'script',
-                'https://connect.facebook.net/en_US/fbevents.js');
-                fbq('init', '${metaPixelId}');
-                fbq('track', 'PageView');
-              `,
+              __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${metaPixelId}');fbq('track','PageView');`,
             }}
           />
         )}
@@ -203,7 +200,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
 
       <body suppressHydrationWarning style={{ backgroundColor: bodyBgColor }}>
-        {/* Google Tag Manager (noscript fallback) */}
         {googleTagManagerId && (
           <noscript
             dangerouslySetInnerHTML={{

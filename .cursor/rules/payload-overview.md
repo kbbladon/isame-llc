@@ -47,8 +47,8 @@ export default buildConfig({
   admin: {
     user: 'users',
     importMap: {
-      baseDir: path.resolve(dirname),
-    },
+  baseDir: path.resolve(dirname),   // dirname = src/
+},
   },
   collections: [Users, Media],
   editor: lexicalEditor(),

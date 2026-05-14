@@ -21,7 +21,7 @@ import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
-import { Header } from './Header/config'
+import { Header } from './Header/config' // ✅ fixed path
 import { plugins } from './plugins'
 import { getServerSideURL } from './utilities/getURL'
 import { Settings } from './globals/Settings'
@@ -36,19 +36,29 @@ cloudinary.config({
 })
 
 export default buildConfig({
-  // ✅ Keep this one
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || getServerSideURL(),
   cors: [
     getServerSideURL(),
     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
   ].filter((url): url is string => url !== null),
+
+  // 🌐 Localization – enables the language switcher
+  localization: {
+    locales: [
+      { label: 'English', code: 'en' },
+      { label: 'Spanish', code: 'es' },
+    ],
+    defaultLocale: 'en',
+    fallback: true,
+  },
+
   admin: {
     components: {
-      beforeLogin: ['@/components/BeforeLogin'],
-      beforeDashboard: ['@/components/BeforeDashboard'],
+      beforeLogin: ['@/components/BeforeLogin#default'],
+      beforeDashboard: ['@/components/BeforeDashboard#default'],
     },
     importMap: {
-      baseDir: path.resolve(dirname),
+      baseDir: path.resolve(dirname), // dirname = src/
     },
     user: Users.slug,
     livePreview: {
@@ -59,6 +69,7 @@ export default buildConfig({
       ],
     },
   },
+
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,
@@ -84,16 +95,16 @@ export default buildConfig({
       }),
     ],
   }),
+
   db: mongooseAdapter({
     url: process.env.DATABASE_URL || '',
   }),
+
   collections: [Pages, Posts, Media, Categories, Users],
-  // ❌ Remove this duplicate cors line:
-  // cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, Settings],
+
   plugins: [
     ...plugins,
-
     cloudinaryStorage({
       cloudConfig: {
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -105,7 +116,7 @@ export default buildConfig({
           options: {
             folder: 'media',
             resource_type: 'image',
-            transformation: [], // No upload‑time transformations – we'll handle delivery via getStorageURL
+            transformation: [],
           },
           getStorageURL: ({
             public_id,
@@ -116,20 +127,18 @@ export default buildConfig({
             resource_type: string
             version?: number | string
           }) => {
-            // Build a correct Cloudinary URL with version and optimizations
             return cloudinary.url(public_id, {
               secure: true,
               resource_type: resource_type || 'image',
-              version: version, // ✅ Crucial – ensures the correct version is included
-              transformation: [
-                { quality: 'auto', fetch_format: 'auto' }, // Your optimizations
-              ],
+              version: version,
+              transformation: [{ quality: 'auto', fetch_format: 'auto' }],
             })
           },
         } as any,
       },
     }),
   ],
+
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {
