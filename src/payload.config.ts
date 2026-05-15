@@ -21,7 +21,7 @@ import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
-import { Header } from './Header/config' // ✅ fixed path
+import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { getServerSideURL } from './utilities/getURL'
 import { Settings } from './globals/Settings'
@@ -35,6 +35,18 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET!,
 })
 
+// SVG‑safe URL builder – never transform SVGs
+const getStorageURL = ({ public_id, version, resource_type, format }: any) => {
+  const isSVG = (typeof public_id === 'string' && public_id.endsWith('.svg')) || format === 'svg'
+
+  return cloudinary.url(public_id, {
+    secure: true,
+    resource_type: 'image',
+    version,
+    transformation: isSVG ? [] : [{ quality: 'auto', fetch_format: 'auto' }],
+  })
+}
+
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || getServerSideURL(),
   cors: [
@@ -42,7 +54,6 @@ export default buildConfig({
     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
   ].filter((url): url is string => url !== null),
 
-  // 🌐 Localization – enables the language switcher
   localization: {
     locales: [
       { label: 'English', code: 'en' },
@@ -58,7 +69,7 @@ export default buildConfig({
       beforeDashboard: ['@/components/BeforeDashboard#default'],
     },
     importMap: {
-      baseDir: path.resolve(dirname), // dirname = src/
+      baseDir: path.resolve(dirname),
     },
     user: Users.slug,
     livePreview: {
@@ -105,6 +116,7 @@ export default buildConfig({
 
   plugins: [
     ...plugins,
+    // Inside plugins array
     cloudinaryStorage({
       cloudConfig: {
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -113,28 +125,26 @@ export default buildConfig({
       },
       collections: {
         media: {
-          options: {
-            folder: 'media',
-            resource_type: 'image',
-            transformation: [],
+          // All properties go directly on the media object – no nested "options"
+          folder: 'media',
+          resourceType: 'image', // forces SVG as image, never raw
+          public_id: ({ originalname }: { originalname: string }) => {
+            return `media/${originalname}` // keeps filename.svg extension
           },
-          getStorageURL: ({
-            public_id,
-            resource_type,
-            version,
-          }: {
-            public_id: string
-            resource_type: string
-            version?: number | string
-          }) => {
+          transformation: [], // no upload‑time transforms
+          deleteFromCloudinary: true,
+
+          getStorageURL: ({ public_id, version, resource_type, format }: any) => {
+            const isSVG =
+              (typeof public_id === 'string' && public_id.endsWith('.svg')) || format === 'svg'
             return cloudinary.url(public_id, {
               secure: true,
-              resource_type: resource_type || 'image',
-              version: version,
-              transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+              resource_type: 'image',
+              version,
+              transformation: isSVG ? [] : [{ quality: 'auto', fetch_format: 'auto' }],
             })
           },
-        } as any,
+        } as any, // ← cast to any to skip missing type definitions
       },
     }),
   ],

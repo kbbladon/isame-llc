@@ -49,6 +49,7 @@ const fieldToPresetKey: Record<string, keyof (typeof THEME_PRESETS)['luxury']['c
   serviceCardBg: 'surface',
   sectionBackgroundColor: 'background',
   bannerBg: 'primary',
+  color: 'primary',
 }
 
 type Props = {

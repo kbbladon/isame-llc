@@ -35,6 +35,12 @@ const blockComponents: Record<string, any> = {
   ),
   imageRow: dynamic(() => import('@/blocks/ImageRow/Component').then((mod) => mod.ImageRowBlock)),
   table: dynamic(() => import('@/blocks/Table/Component').then((mod) => mod.TableBlockComponent)),
+  'trust-badges': dynamic(() =>
+    import('@/blocks/TrustBadges/Component').then((mod) => mod.TrustBadgesBlockComponent),
+  ),
+  'feature-section': dynamic(() =>
+    import('@/blocks/FeatureSection/Component').then((mod) => mod.FeatureSectionBlockComponent),
+  ),
 }
 
 // Optional loading fallback for all blocks

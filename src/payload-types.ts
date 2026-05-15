@@ -154,27 +154,77 @@ export interface UserAuthOperations {
 export interface Page {
   id: string;
   title: string;
-  hero: {
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact' | 'slider' | 'lowGradient';
-    gradientTitle?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
+  /**
+   * Configure the main hero section for this page.
+   */
+  hero?: {
+    /**
+     * Choose the hero layout style.
+     */
+    type?: ('none' | 'highImpact' | 'mediumImpact' | 'lowImpact' | 'slider' | 'lowGradient' | 'largeGradient') | null;
+    /**
+     * Large cinematic hero with layered gradients and CTA controls.
+     */
+    largeGradientFields?: {
+      /**
+       * Choose how tall the hero should appear.
+       */
+      heroHeight?: ('screen' | '80vh' | '60vh' | '40vh' | 'custom') | null;
+      customHeight?: string | null;
+      contentAlignment?: ('left' | 'center' | 'right') | null;
+      contentMaxWidth?: ('sm' | 'md' | 'lg' | 'xl' | 'full') | null;
+      /**
+       * Recommended size: 1920x1080 or larger.
+       */
+      backgroundImage?: (string | null) | Media;
+      /**
+       * Optional MP4/WebM cinematic background.
+       */
+      backgroundVideo?: (string | null) | Media;
+      backgroundPosition?: ('center' | 'top' | 'bottom' | 'left' | 'right') | null;
+      enableParallax?: boolean | null;
+      overlayType?: ('gradient' | 'solid') | null;
+      solidColor?: string | null;
+      gradientType?: ('linear' | 'radial') | null;
+      gradientDirection?:
+        | ('to right' | 'to left' | 'to bottom' | 'to top' | '45deg' | '135deg' | '225deg' | '315deg')
+        | null;
+      /**
+       * Add multiple color stops for cinematic overlays.
+       */
+      gradientStops?:
+        | {
+            color?: string | null;
+            position?: ('0%' | '10%' | '20%' | '30%' | '40%' | '50%' | '60%' | '70%' | '80%' | '90%' | '100%') | null;
+            id?: string | null;
+          }[]
+        | null;
+      overlayOpacity?: number | null;
+      blurBackground?: boolean | null;
+      headline: string;
+      headlineColor?: string | null;
+      headlineSize?: ('sm' | 'md' | 'lg' | 'xl' | 'display') | null;
+      subheadline?: string | null;
+      subheadlineColor?: string | null;
+      primaryCta?: {
+        label?: string | null;
+        url?: string | null;
+        newTab?: boolean | null;
+        bgColor?: string | null;
+        textColor?: string | null;
       };
-      [k: string]: unknown;
-    } | null;
-    gradientSubtitle?: string | null;
-    gradientBackground?: (string | null) | Media;
-    gradientOverlayOpacity?: number | null;
-    gradientHeight?: ('400px' | '520px' | '600px' | '100vh') | null;
+      secondaryCta?: {
+        label?: string | null;
+        url?: string | null;
+        newTab?: boolean | null;
+        borderColor?: string | null;
+        textColor?: string | null;
+      };
+      enableAnimation?: boolean | null;
+      animationStyle?: ('fade-up' | 'fade-in' | 'zoom-in' | 'slide-left' | 'slide-right') | null;
+      showScrollIndicator?: boolean | null;
+      scrollIndicatorColor?: string | null;
+    };
     richText?: {
       root: {
         type: string;
@@ -192,69 +242,13 @@ export interface Page {
     } | null;
     links?:
       | {
-          link: {
-            type?: ('reference' | 'custom') | null;
-            newTab?: boolean | null;
-            reference?:
-              | ({
-                  relationTo: 'pages';
-                  value: string | Page;
-                } | null)
-              | ({
-                  relationTo: 'posts';
-                  value: string | Post;
-                } | null);
-            url?: string | null;
-            label: string;
-            /**
-             * Choose how the link should be rendered.
-             */
-            appearance?: ('default' | 'outline') | null;
-          };
+          label?: string | null;
+          url?: string | null;
+          newTab?: boolean | null;
           id?: string | null;
         }[]
       | null;
     media?: (string | null) | Media;
-    slider?: {
-      mode?: ('static' | 'dynamic') | null;
-      staticContent?: {
-        /**
-         * Use the toolbar to add formatted text and colors.
-         */
-        overlayText?: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        } | null;
-        cta?: {
-          label?: string | null;
-          url?: string | null;
-        };
-      };
-      slides?:
-        | {
-            media: string | Media;
-            id?: string | null;
-          }[]
-        | null;
-      autoplay?: boolean | null;
-      autoplaySpeed?: number | null;
-      showArrows?: boolean | null;
-      showDots?: boolean | null;
-      height?: ('full' | 'large' | 'medium') | null;
-      animationPreset?: ('slide' | 'fade' | 'cinematic') | null;
-      overlayColor?: string | null;
-    };
   };
   /**
    * Leave empty to use the default site background.
@@ -902,6 +896,74 @@ export interface Page {
         blockName?: string | null;
         blockType: 'table';
       }
+    | {
+        /**
+         * Background colour for the entire trust badges section.
+         */
+        backgroundColor?: string | null;
+        badges?:
+          | {
+              icon:
+                | 'users'
+                | 'shield'
+                | 'globe'
+                | 'star'
+                | 'heart'
+                | 'award'
+                | 'badgeCheck'
+                | 'thumbsUp'
+                | 'briefcase'
+                | 'handshake';
+              text: string;
+              /**
+               * Leave empty to use the theme primary colour.
+               */
+              iconColor?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        columns?: ('1' | '2' | '3' | '4' | '5' | '6') | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'trust-badges';
+      }
+    | {
+        heading?: string | null;
+        headingColor?: string | null;
+        subheading?: string | null;
+        subheadingColor?: string | null;
+        backgroundColor?: string | null;
+        columns?: ('2' | '3' | '4') | null;
+        features?:
+          | {
+              icon:
+                | 'heart'
+                | 'fileText'
+                | 'users'
+                | 'star'
+                | 'shield'
+                | 'award'
+                | 'badgeCheck'
+                | 'thumbsUp'
+                | 'globe'
+                | 'briefcase'
+                | 'handshake';
+              title: string;
+              description: string;
+              titleColor?: string | null;
+              descriptionColor?: string | null;
+              cardBgColor?: string | null;
+              cardBorderColor?: string | null;
+              iconBgColor?: string | null;
+              iconColor?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        enableAnimation?: boolean | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'feature-section';
+      }
   )[];
   meta?: {
     title?: string | null;
@@ -975,6 +1037,54 @@ export interface Media {
   focalX?: number | null;
   focalY?: number | null;
   sizes?: {};
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CallToActionBlock".
+ */
+export interface CallToActionBlock {
+  richText?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  links?:
+    | {
+        link: {
+          type?: ('reference' | 'custom') | null;
+          newTab?: boolean | null;
+          reference?:
+            | ({
+                relationTo: 'pages';
+                value: string | Page;
+              } | null)
+            | ({
+                relationTo: 'posts';
+                value: string | Post;
+              } | null);
+          url?: string | null;
+          label: string;
+          /**
+           * Choose how the link should be rendered.
+           */
+          appearance?: ('default' | 'outline') | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cta';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1076,54 +1186,6 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CallToActionBlock".
- */
-export interface CallToActionBlock {
-  richText?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  links?:
-    | {
-        link: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: string | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: string | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'cta';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1731,57 +1793,68 @@ export interface PagesSelect<T extends boolean = true> {
     | T
     | {
         type?: T;
-        gradientTitle?: T;
-        gradientSubtitle?: T;
-        gradientBackground?: T;
-        gradientOverlayOpacity?: T;
-        gradientHeight?: T;
+        largeGradientFields?:
+          | T
+          | {
+              heroHeight?: T;
+              customHeight?: T;
+              contentAlignment?: T;
+              contentMaxWidth?: T;
+              backgroundImage?: T;
+              backgroundVideo?: T;
+              backgroundPosition?: T;
+              enableParallax?: T;
+              overlayType?: T;
+              solidColor?: T;
+              gradientType?: T;
+              gradientDirection?: T;
+              gradientStops?:
+                | T
+                | {
+                    color?: T;
+                    position?: T;
+                    id?: T;
+                  };
+              overlayOpacity?: T;
+              blurBackground?: T;
+              headline?: T;
+              headlineColor?: T;
+              headlineSize?: T;
+              subheadline?: T;
+              subheadlineColor?: T;
+              primaryCta?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    newTab?: T;
+                    bgColor?: T;
+                    textColor?: T;
+                  };
+              secondaryCta?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    newTab?: T;
+                    borderColor?: T;
+                    textColor?: T;
+                  };
+              enableAnimation?: T;
+              animationStyle?: T;
+              showScrollIndicator?: T;
+              scrollIndicatorColor?: T;
+            };
         richText?: T;
         links?:
           | T
           | {
-              link?:
-                | T
-                | {
-                    type?: T;
-                    newTab?: T;
-                    reference?: T;
-                    url?: T;
-                    label?: T;
-                    appearance?: T;
-                  };
+              label?: T;
+              url?: T;
+              newTab?: T;
               id?: T;
             };
         media?: T;
-        slider?:
-          | T
-          | {
-              mode?: T;
-              staticContent?:
-                | T
-                | {
-                    overlayText?: T;
-                    cta?:
-                      | T
-                      | {
-                          label?: T;
-                          url?: T;
-                        };
-                  };
-              slides?:
-                | T
-                | {
-                    media?: T;
-                    id?: T;
-                  };
-              autoplay?: T;
-              autoplaySpeed?: T;
-              showArrows?: T;
-              showDots?: T;
-              height?: T;
-              animationPreset?: T;
-              overlayColor?: T;
-            };
       };
   backgroundImage?: T;
   overlayColor?: T;
@@ -2131,6 +2204,49 @@ export interface PagesSelect<T extends boolean = true> {
                   };
               striped?: T;
               hover?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'trust-badges'?:
+          | T
+          | {
+              backgroundColor?: T;
+              badges?:
+                | T
+                | {
+                    icon?: T;
+                    text?: T;
+                    iconColor?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'feature-section'?:
+          | T
+          | {
+              heading?: T;
+              headingColor?: T;
+              subheading?: T;
+              subheadingColor?: T;
+              backgroundColor?: T;
+              columns?: T;
+              features?:
+                | T
+                | {
+                    icon?: T;
+                    title?: T;
+                    description?: T;
+                    titleColor?: T;
+                    descriptionColor?: T;
+                    cardBgColor?: T;
+                    cardBorderColor?: T;
+                    iconBgColor?: T;
+                    iconColor?: T;
+                    id?: T;
+                  };
+              enableAnimation?: T;
               id?: T;
               blockName?: T;
             };

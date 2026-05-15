@@ -24,6 +24,8 @@ import { MenuTabs } from '@/blocks/MenuTabs/config'
 import { MenuTable } from '@/blocks/MenuTable/config'
 import { ImageRow } from '@/blocks/ImageRow/config'
 import { TableBlock } from '@/blocks/Table/config'
+import { TrustBadgesBlock } from '@/blocks/TrustBadges/config'
+import { FeatureSectionBlock } from '@/blocks/FeatureSection/config'
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -98,7 +100,7 @@ export const Pages: CollectionConfig<'pages'> = {
                   defaultValue: '#0f3d2e',
                   admin: {
                     components: {
-                      /*Field: '@/components/ColorPicker'*/
+                      Field: '@/components/ColorPicker',
                     },
                     description: 'Applied as a transparent overlay over the background image.',
                   },
@@ -152,6 +154,8 @@ export const Pages: CollectionConfig<'pages'> = {
                 MenuTable,
                 ImageRow,
                 TableBlock,
+                TrustBadgesBlock,
+                FeatureSectionBlock,
               ],
               required: true,
               admin: {

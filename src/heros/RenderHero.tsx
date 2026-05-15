@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import type { Page } from '@/payload-types'
 
 import { HighImpactHero } from '@/heros/HighImpact'
@@ -6,22 +6,24 @@ import { LowImpactHero } from '@/heros/LowImpact'
 import { MediumImpactHero } from '@/heros/MediumImpact'
 import { SliderHero } from '@/heros/SliderHero'
 import { LowGradientHero } from '@/heros/LowGradientHero'
+import { LargeGradientComponent } from '@/heros/LargeGradient'
 
-/**
- * 1. Single source of truth for hero registry
- */
+// -----------------------------------------------------
+// Hero registry
+// -----------------------------------------------------
 const HEROES = {
   highImpact: HighImpactHero,
   lowImpact: LowImpactHero,
   mediumImpact: MediumImpactHero,
   lowGradient: LowGradientHero,
+  largeGradient: LargeGradientComponent,
 } as const
 
 type HeroType = keyof typeof HEROES | 'slider' | 'sliderHero' | 'none'
 
-/**
- * 2. Slider normalization (kept isolated + clean)
- */
+// -----------------------------------------------------
+// Slider normalization
+// -----------------------------------------------------
 function normalizeSliderData(slider: any) {
   if (!slider) return slider
 
@@ -55,38 +57,24 @@ function normalizeSliderData(slider: any) {
   ] as const
 
   for (const field of nullableFields) {
-    if (cleaned[field] === null) {
-      cleaned[field] = undefined
-    }
+    if (cleaned[field] === null) cleaned[field] = undefined
   }
 
   return cleaned
 }
 
-/**
- * 3. Safe hero data extractor (only used for nested hero types)
- */
-function getHeroData(props: any, type: string) {
-  return props?.[type]
-}
-
-/**
- * 4. RenderHero
- */
+// -----------------------------------------------------
+// Main Renderer
+// -----------------------------------------------------
 export const RenderHero: React.FC<Page['hero']> = (props) => {
   const isDev = process.env.NODE_ENV === 'development'
 
   const heroType = (props?.type as HeroType) ?? 'none'
+  if (heroType === 'none') return null
 
-  if (isDev) {
-    console.log('🦸 Hero type:', heroType)
-  }
-
-  if (!heroType || heroType === 'none') return null
-
-  /**
-   * 5. Slider handling (isolated, early return)
-   */
+  // ----------------------------
+  // Slider case
+  // ----------------------------
   if (heroType === 'slider' || heroType === 'sliderHero') {
     const slider = (props as any)?.slider
     if (!slider) return null
@@ -94,38 +82,44 @@ export const RenderHero: React.FC<Page['hero']> = (props) => {
     return <SliderHero sliderData={normalizeSliderData(slider)} />
   }
 
-  /**
-   * 6. Resolve hero component
-   */
+  // ----------------------------
+  // Resolve hero component
+  // ----------------------------
   const HeroComponent = HEROES[heroType as keyof typeof HEROES]
 
   if (!HeroComponent) {
-    if (isDev) {
-      console.warn(`⚠️ Unknown hero type: ${heroType}`)
-    }
+    if (isDev) console.warn(`⚠️ Unknown hero type: ${heroType}`)
     return null
   }
 
-  /**
-   * 7. Handle flat-structured hero types (e.g., lowGradient)
-   *    These expect all props directly, not nested under `props[heroType]`.
-   */
+  // ----------------------------
+  // LOW GRADIENT (flat structure)
+  // ----------------------------
   if (heroType === 'lowGradient') {
-    if (isDev) {
-      console.log(`✅ Rendering ${heroType} hero (flat props)`, props)
-    }
-    return <LowGradientHero {...props} />
+    const heroData = (props as any)?.lowGradient
+    if (!heroData) return null
+
+    return <HeroComponent {...heroData} />
   }
 
-  /**
-   * 8. For other hero types, extract nested data
-   */
-  const heroData = getHeroData(props, heroType)
+  // ----------------------------
+  // LARGE GRADIENT (IMPORTANT FIX)
+  // ----------------------------
+  if (heroType === 'largeGradient') {
+    const heroData = (props as any)?.largeGradientFields
+    if (!heroData) return null
 
+    return <HeroComponent {...heroData} />
+  }
+
+  // ----------------------------
+  // Nested hero structure (standard)
+  // ----------------------------
+  const heroData = (props as any)?.[heroType]
   if (!heroData) return null
 
   if (isDev) {
-    console.log(`✅ Rendering ${heroType} hero (nested props)`, heroData)
+    console.log(`✅ Rendering ${heroType} hero`)
   }
 
   return <HeroComponent {...heroData} />

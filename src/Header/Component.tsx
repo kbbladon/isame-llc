@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useHeaderTheme } from '@/providers/HeaderTheme'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { Phone } from 'lucide-react'
 
 type HeaderProps = { settings?: any }
@@ -32,7 +32,6 @@ const getLinkLabel = (linkItem: any): string => {
 // Custom hook to fetch and inline SVG content
 const useInlineSvg = (url: string | undefined) => {
   const [svgContent, setSvgContent] = useState<string | null>(null)
-  const [error, setError] = useState(false)
 
   useEffect(() => {
     if (!url) return
@@ -41,15 +40,26 @@ const useInlineSvg = (url: string | undefined) => {
         if (!res.ok) throw new Error('Failed to fetch SVG')
         return res.text()
       })
-      .then((text) => setSvgContent(text))
-      .catch(() => setError(true))
+      .then((text) => {
+        // Remove hardcoded width/height from the root <svg> tag
+        const cleaned = text
+          .replace(/<svg([^>]*?)width="[^"]*"/, '<svg$1')
+          .replace(/<svg([^>]*?)height="[^"]*"/, '<svg$1')
+        // Ensure a viewBox exists (fallback to 0 0 100 100 if missing)
+        if (!/<svg[^>]*?viewBox="/i.test(cleaned)) {
+          return cleaned.replace(/<svg/, '<svg viewBox="0 0 500 500"')
+        }
+        return cleaned
+      })
+      .then(setSvgContent)
+      .catch(() => setSvgContent(null))
   }, [url])
 
-  return { svgContent, error }
+  return { svgContent }
 }
 
 export const Header: React.FC<HeaderProps> = ({ settings }) => {
-  const { headerTheme, setHeaderTheme } = useHeaderTheme()
+  const { setHeaderTheme } = useHeaderTheme()
   const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -86,18 +96,17 @@ export const Header: React.FC<HeaderProps> = ({ settings }) => {
   const isSvg = logoMedia?.mimeType === 'image/svg+xml' || logoMedia?.format === 'svg'
 
   // Fetch the actual SVG content if it's an SVG
-  const { svgContent, error: svgError } = useInlineSvg(isSvg ? logoSrc : undefined)
+  const { svgContent } = useInlineSvg(isSvg ? logoSrc : undefined)
 
   const opacity = branding?.headerOverlayOpacity ?? 0.9
   const gradient =
     branding?.headerGradient ||
     `linear-gradient(to bottom, rgba(0,0,0,${opacity}), rgba(0,0,0,${opacity * 0.6}), transparent)`
 
-  const logoNaturalWidth = logoMedia?.width ?? 350
-  const logoNaturalHeight = logoMedia?.height ?? 150
-  const desktopWidth = branding?.logoWidthDesktop ?? logoNaturalWidth
-  const mobileWidth = branding?.logoWidthMobile ?? Math.min(200, logoNaturalWidth)
-  const logoAspectRatio = logoNaturalWidth / logoNaturalHeight
+  const logoNaturalWidth = logoMedia?.width ?? undefined
+  const logoNaturalHeight = logoMedia?.height ?? undefined
+  const desktopWidth = branding?.logoWidthDesktop ?? 180
+  const mobileWidth = branding?.logoWidthMobile ?? 140
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
@@ -113,83 +122,95 @@ export const Header: React.FC<HeaderProps> = ({ settings }) => {
   const toggleMobileParent = (index: number) =>
     setOpenMobileParent(openMobileParent === index ? null : index)
 
+  // Updated logo render function — no forced aspect ratio
   const renderLogo = () => {
     if (!logoMedia) return null
 
-    // Render inline SVG from fetched content
+    // Inline SVG – responsive, never cropped
     if (isSvg && svgContent) {
       return (
         <div
-          className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain [&>svg]:object-center"
+          className="[&>svg]:block [&>svg]:max-w-full [&>svg]:h-auto"
+          style={{ maxWidth: '100%' }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
       )
     }
 
-    // Fallback for raster images
+    // Raster images (png, jpg, etc.)
     if (!isSvg && logoSrc) {
+      const imgHeight =
+        logoNaturalHeight && logoNaturalWidth
+          ? Math.round(desktopWidth / (logoNaturalWidth / logoNaturalHeight))
+          : undefined
       return (
         <Image
           src={logoSrc}
           alt="Logo"
-          fill
-          sizes={`(max-width: 768px) ${mobileWidth}px, ${desktopWidth}px`}
-          className="object-contain object-center"
+          width={desktopWidth}
+          height={imgHeight}
+          className="max-w-full h-auto"
           priority
           unoptimized
         />
       )
     }
 
-    // Loading / error state
     return null
   }
 
   return (
     <>
       <header
-        style={{
-          backgroundImage: !isScrolled ? gradient : 'none',
-          borderBottom: isScrolled ? `1px solid ${primaryColor}` : 'none',
-        }}
         className={`
-          sticky top-0 md:fixed md:top-0 md:left-0 md:right-0
-          w-full z-50 transition-all duration-500 ease-in-out
-          ${isScrolled ? 'bg-black/80 backdrop-blur-md shadow-sm' : 'bg-transparent'}
-        `}
+    sticky top-0 md:fixed md:top-0 md:left-0 md:right-0
+    w-full z-50 transition-all duration-500
+    ${
+      isScrolled
+        ? 'bg-black/80 shadow-sm border-b border-[var(--color-primary)]' // solid sticky state
+        : 'bg-black/50 backdrop-blur-xl' // frosted glass
+    }
+  `}
       >
-        <div className="flex justify-center">
+        {/* Gradient that goes from dark at the top to transparent at the bottom */}
+        <div
+          className="absolute inset-0 transition-opacity duration-500"
+          style={{
+            backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 80%)`,
+            opacity: isScrolled ? 0 : 1,
+          }}
+        />
+
+        <div className="flex justify-center relative z-10">
           <div
             className={`w-full max-w-7xl px-6 transition-all duration-500 ${isScrolled ? 'py-3' : 'py-6'}`}
           >
             <div className="flex items-center justify-between gap-2 md:gap-4 lg:gap-8">
               <div className="flex items-center gap-2 md:gap-4 lg:gap-6 shrink-0">
-                <Link href="/" className="relative shrink-0">
+                {/* Logo link with responsive width – no aspect ratio box */}
+                <Link href="/" className="shrink-0">
                   <div
-                    style={
-                      {
-                        '--mobile-w': isScrolled
-                          ? `${Math.round(mobileWidth * 0.85)}px`
-                          : `${mobileWidth}px`,
-                        '--desktop-w': isScrolled
-                          ? `${Math.round(desktopWidth * 0.75)}px`
-                          : `${desktopWidth}px`,
-                        transition: 'width 0.5s ease-in-out',
-                      } as React.CSSProperties
-                    }
-                    className="relative w-[var(--mobile-w)] md:w-[var(--desktop-w)]"
+                    className="hidden md:block"
+                    style={{
+                      width: `${isScrolled ? Math.round(desktopWidth * 0.75) : desktopWidth}px`,
+                      maxWidth: '100%',
+                      transition: 'width 0.5s ease-in-out',
+                    }}
                   >
-                    <div
-                      style={{
-                        position: 'relative',
-                        width: '100%',
-                        aspectRatio: String(logoAspectRatio),
-                      }}
-                    >
-                      {renderLogo()}
-                    </div>
+                    {renderLogo()}
+                  </div>
+                  <div
+                    className="block md:hidden"
+                    style={{
+                      width: `${isScrolled ? Math.round(mobileWidth * 0.85) : mobileWidth}px`,
+                      maxWidth: '100%',
+                      transition: 'width 0.5s ease-in-out',
+                    }}
+                  >
+                    {renderLogo()}
                   </div>
                 </Link>
+
                 {phoneNumber && (
                   <div className="hidden lg:block">
                     <a

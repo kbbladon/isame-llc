@@ -49,7 +49,7 @@ export const CardGrid: Block = {
           name: 'overlayColor',
           type: 'text',
           defaultValue: '#000000',
-          admin: { components: { Field: '@/components/ColorPicker' } as any },
+          admin: { components: { Field: '@/components/ColorPicker#default' } as any },
         },
         {
           name: 'scrollAnimation',
