@@ -1,10 +1,9 @@
-// app/(frontend)/[slug]/page.tsx
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
 import { unstable_cache } from 'next/cache'
-import { draftMode } from 'next/headers'
+import { draftMode, cookies } from 'next/headers' // 👈 added cookies
 import Image from 'next/image'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
@@ -12,11 +11,13 @@ import { generateMeta } from '@/utilities/generateMeta'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { optimizedCloudinaryUrl } from '@/utilities/optimizedCloudinaryUrl'
 import type { Metadata } from 'next'
+import type { Post } from '@/payload-types'
 
 type Args = {
   params: Promise<{ slug: string }>
 }
 
+// ---------- HELPERS ----------
 const hexToRgba = (hex: string, alpha: number): string => {
   hex = hex.replace('#', '')
   const r = parseInt(hex.substring(0, 2), 16)
@@ -31,7 +32,15 @@ const getImageUrl = (media: any): string | null => {
   return null
 }
 
-const getPageData = cache(async (slug: string, draft = false) => {
+// Updated locale helper – now async
+const getLocale = async (): Promise<'en' | 'es'> => {
+  const cookieStore = await cookies()
+  const localeCookie = cookieStore.get('locale')
+  return localeCookie?.value === 'es' ? 'es' : 'en'
+}
+
+// ---------- DATA FETCHING (locale‑aware) ----------
+const getPageData = cache(async (slug: string, draft = false, locale: 'en' | 'es' = 'en') => {
   const payload = await getPayload({ config: configPromise })
 
   const [pageResult, settings] = await Promise.all([
@@ -41,6 +50,7 @@ const getPageData = cache(async (slug: string, draft = false) => {
       limit: 1,
       depth: 1,
       draft,
+      locale, // 👈 locale passed to query
       select: {
         title: true,
         slug: true,
@@ -55,33 +65,74 @@ const getPageData = cache(async (slug: string, draft = false) => {
         updatedAt: true,
       },
     }),
-    payload.findGlobal({ slug: 'settings', depth: 1 }),
+    payload.findGlobal({ slug: 'settings', depth: 1, locale }), // 👈 locale for settings too
   ])
 
   const page = pageResult.docs[0] || null
   return { page, settings }
 })
 
-const getCachedPageData = (slug: string) =>
-  unstable_cache(async () => getPageData(slug, false), [`page-${slug}`], {
+const getCachedPageData = (slug: string, locale: 'en' | 'es') =>
+  unstable_cache(async () => getPageData(slug, false, locale), [`page-${slug}-${locale}`], {
     revalidate: 3600,
     tags: [`page-${slug}`],
   })()
 
+// ---------- PAGE COMPONENT ----------
 export default async function Page({ params }: Args) {
   const { slug } = await params
   const decodedSlug = decodeURIComponent(slug)
+  const locale = await getLocale() // 👈 await the async helper
 
   const { isEnabled: isDraftMode } = await draftMode()
 
   const { page, settings } = isDraftMode
-    ? await getPageData(decodedSlug, true)
+    ? await getPageData(decodedSlug, true, locale)
     : process.env.NODE_ENV === 'production'
-      ? await getCachedPageData(decodedSlug)
-      : await getPageData(decodedSlug, false)
+      ? await getCachedPageData(decodedSlug, locale)
+      : await getPageData(decodedSlug, false, locale)
 
   if (!page) notFound()
 
+  // ---------- RESOLVE BLOCK DATA (locale‑aware) ----------
+  let layout = page.layout ?? []
+  if (layout.length > 0) {
+    const payload = await getPayload({ config: configPromise })
+
+    layout = await Promise.all(
+      layout.map(async (block) => {
+        if (block.blockType === 'archive') {
+          const { categories, limit: limitFromProps, populateBy, selectedDocs } = block
+          const limit = limitFromProps || 3
+          let posts: Post[] = []
+
+          if (populateBy === 'collection') {
+            const flattenedCategories =
+              categories?.map((c) => (typeof c === 'object' ? c.id : c)) ?? []
+            const result = await payload.find({
+              collection: 'posts',
+              depth: 1,
+              limit,
+              locale, // 👈 locale for posts
+              ...(flattenedCategories.length
+                ? { where: { categories: { in: flattenedCategories } } }
+                : {}),
+            })
+            posts = result.docs
+          } else if (selectedDocs?.length) {
+            posts = selectedDocs
+              .map((doc) => (typeof doc.value === 'object' ? (doc.value as Post) : null))
+              .filter((p): p is Post => p !== null)
+          }
+
+          return { ...block, posts }
+        }
+        return block
+      }),
+    )
+  }
+
+  // ---------- PAGE DISPLAY ----------
   const bodyBgColor = settings?.colors?.bodyBgColor || '#040d10'
   const bodyFont = settings?.typography?.bodyFontFamily || 'Prompt, sans-serif'
 
@@ -89,7 +140,6 @@ export default async function Page({ params }: Args) {
   const overlayOpacity = page.overlayOpacity ?? 0.7
   const bgUrl = getImageUrl(page.backgroundImage)
   const contentWidth = page.contentWidth || 'contained'
-
   const showOverlay = overlayOpacity > 0
 
   return (
@@ -97,19 +147,17 @@ export default async function Page({ params }: Args) {
       {isDraftMode && <LivePreviewListener />}
 
       <div className="relative">
-        {/* BACKGROUND IMAGE – optimized with Next.js Image and Cloudinary */}
         {bgUrl && (
           <Image
             src={optimizedCloudinaryUrl(bgUrl)}
             alt=""
             fill
             className="object-cover z-0"
-            priority // LCP candidate
+            priority
             sizes="100vw"
           />
         )}
 
-        {/* PAGE OVERLAY COLOUR */}
         {showOverlay && (
           <div
             className="absolute inset-0 z-0"
@@ -117,12 +165,11 @@ export default async function Page({ params }: Args) {
           />
         )}
 
-        {/* HERO & LAYOUT BLOCKS */}
         <div className="relative z-10">
           <RenderHero {...page.hero} />
           <div className={contentWidth === 'contained' ? 'max-w-7xl mx-auto px-4' : ''}>
             <RenderBlocks
-              blocks={page.layout}
+              blocks={layout}
               settings={{
                 headingFontFamily: settings?.typography?.headingFontFamily,
                 bodyFontFamily: settings?.typography?.bodyFontFamily,
@@ -138,14 +185,17 @@ export default async function Page({ params }: Args) {
   )
 }
 
+// ---------- METADATA (locale‑aware) ----------
 export async function generateMetadata({ params }: Args): Promise<Metadata> {
   const { slug } = await params
   const decodedSlug = decodeURIComponent(slug)
-  const { page } = await getPageData(decodedSlug, false)
+  const locale = await getLocale()
+  const { page } = await getPageData(decodedSlug, false, locale)
   if (!page) return {}
   return generateMeta({ doc: page })
 }
 
+// ---------- STATIC PARAMS (unchanged) ----------
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
   const pages = await payload.find({

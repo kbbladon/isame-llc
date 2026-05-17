@@ -9,14 +9,15 @@ import Footer from '@/Footer/Component'
 import { Header } from '@/Header/Component'
 import { Providers } from '@/providers'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
-import { draftMode } from 'next/headers'
+import { draftMode, cookies } from 'next/headers'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { THEME_PRESETS } from '@/theme/themePresets' // 👈 theme presets
+import { THEME_PRESETS } from '@/theme/themePresets'
 import ThemeInit from '@/components/ThemeInit'
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 import { SiteSettingsProvider } from '@/providers/SiteSettingsProvider'
+import { LanguageProvider } from '@/providers/Language'
 
 // Preload all possible font families as CSS variables (fallback)
 const baskervville = Baskervville({
@@ -49,11 +50,25 @@ const getMediaUrl = (media: any): string | null => {
   return media.url || null
 }
 
+// ------------------------------------------------------------
+// Locale helper – reads the cookie set by the language toggle
+// ------------------------------------------------------------
+const getLocale = async (): Promise<'en' | 'es'> => {
+  const cookieStore = await cookies()
+  const localeCookie = cookieStore.get('locale')
+  return localeCookie?.value === 'es' ? 'es' : 'en'
+}
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
   const payload = await getPayload({ config })
-  const settings = await payload.findGlobal({ slug: 'settings' })
-  const footer = await payload.findGlobal({ slug: 'footer' })
+
+  // Read the current locale from the cookie
+  const locale = await getLocale()
+
+  // Fetch globals in the correct language
+  const settings = await payload.findGlobal({ slug: 'settings', locale })
+  const footer = await payload.findGlobal({ slug: 'footer', locale })
 
   // ----- THEME PRESET -----
   const themePreset = settings?.themePreset || 'isame'
@@ -106,10 +121,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // ----- UNIQUE GOOGLE FONTS TO LOAD -----
   const fontFamilies = [headingFont, bodyFont, heroHeadingFont, heroSubheadingFont]
     .map((f) => f.split(',')[0].trim())
-    .filter((f) => f.includes(' ')) // only Google Fonts with space
-    .filter((v, i, a) => a.indexOf(v) === i) // unique
+    .filter((f) => f.includes(' '))
+    .filter((v, i, a) => a.indexOf(v) === i)
 
-  // Static font class names (for CSS variable fallback)
   const fontClasses = cn(
     baskervville.variable,
     prompt.variable,
@@ -209,13 +223,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
 
         <SiteSettingsProvider settings={settings as any}>
-          <ThemeInit />
-          <Providers>
-            <AdminBar adminBarProps={{ preview: isEnabled }} />
-            <Header settings={settings} />
-            <main className="w-full">{children}</main>
-            <Footer footer={footer} />
-          </Providers>
+          <LanguageProvider>
+            <ThemeInit />
+            <Providers>
+              <AdminBar adminBarProps={{ preview: isEnabled }} />
+              <Header settings={settings} />
+              <main className="w-full">{children}</main>
+              <Footer footer={footer} />
+            </Providers>
+          </LanguageProvider>
         </SiteSettingsProvider>
 
         {/* Custom body scripts */}

@@ -901,6 +901,10 @@ export interface Page {
          * Background colour for the entire trust badges section.
          */
         backgroundColor?: string | null;
+        /**
+         * Leave empty to use the theme text colour.
+         */
+        textColor?: string | null;
         badges?:
           | {
               icon:
@@ -919,6 +923,10 @@ export interface Page {
                * Leave empty to use the theme primary colour.
                */
               iconColor?: string | null;
+              /**
+               * Optional. Overrides the section‑wide text colour for this badge.
+               */
+              textColor?: string | null;
               id?: string | null;
             }[]
           | null;
@@ -963,6 +971,370 @@ export interface Page {
         id?: string | null;
         blockName?: string | null;
         blockType: 'feature-section';
+      }
+    | {
+        /**
+         * Leave empty for the theme default.
+         */
+        backgroundColor?: string | null;
+        contentWidth?: ('contained' | 'full') | null;
+        image: string | Media;
+        overlayGradientStart?: string | null;
+        overlayGradientEnd?: string | null;
+        overlayOpacity?: number | null;
+        heading: string;
+        headingColor?: string | null;
+        /**
+         * Use the toolbar to format text, add multiple paragraphs, bold, etc.
+         */
+        content: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        quoteText?: string | null;
+        quoteBorderColor?: string | null;
+        enableAnimation?: boolean | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'team-section';
+      }
+    | {
+        /**
+         * Leave empty for the theme default.
+         */
+        backgroundColor?: string | null;
+        heading?: string | null;
+        headingColor?: string | null;
+        subheading?: string | null;
+        subheadingColor?: string | null;
+        testimonials?:
+          | {
+              quote: string;
+              author: string;
+              business?: string | null;
+              quoteIconColor?: string | null;
+              cardBgColor?: string | null;
+              cardBorderColor?: string | null;
+              authorColor?: string | null;
+              businessColor?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        columns?: ('1' | '2' | '3') | null;
+        ctaLabel?: string | null;
+        ctaUrl?: string | null;
+        ctaNewTab?: boolean | null;
+        ctaBgColor?: string | null;
+        ctaTextColor?: string | null;
+        enableAnimation?: boolean | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'testimonials';
+      }
+    | {
+        /**
+         * Placed behind the heading and subheading.
+         */
+        topBackgroundImage?: (string | null) | Media;
+        /**
+         * Fills the top area unless an image is uploaded.
+         */
+        topBackgroundColor?: string | null;
+        topHeight?: ('sm' | 'md' | 'lg' | 'custom') | null;
+        topCustomHeight?: string | null;
+        heading?: string | null;
+        headingColor?: string | null;
+        subheading?: string | null;
+        subheadingColor?: string | null;
+        /**
+         * Background behind the service cards.
+         */
+        serviceBackgroundColor?: string | null;
+        services?:
+          | {
+              icon:
+                | 'trendingUp'
+                | 'scale'
+                | 'users'
+                | 'fileText'
+                | 'shield'
+                | 'checkCircle'
+                | 'star'
+                | 'award'
+                | 'briefcase'
+                | 'handshake';
+              title: string;
+              description: string;
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              cardBgColor?: string | null;
+              cardBorderColor?: string | null;
+              iconBgColor?: string | null;
+              iconColor?: string | null;
+              titleColor?: string | null;
+              descriptionColor?: string | null;
+              featureCheckColor?: string | null;
+              featureTextColor?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Background behind the items and the CTA.
+         */
+        whyChooseUsBackgroundColor?: string | null;
+        whyChooseUsHeading?: string | null;
+        whyChooseUsHeadingColor?: string | null;
+        whyChooseUsItems?:
+          | {
+              icon:
+                | 'shield'
+                | 'fileText'
+                | 'users'
+                | 'heart'
+                | 'award'
+                | 'badgeCheck'
+                | 'thumbsUp'
+                | 'globe'
+                | 'handshake';
+              title: string;
+              description: string;
+              iconBgColor?: string | null;
+              iconColor?: string | null;
+              titleColor?: string | null;
+              descriptionColor?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        ctaBackgroundColor?: string | null;
+        ctaLabel?: string | null;
+        ctaUrl?: string | null;
+        ctaNewTab?: boolean | null;
+        ctaBgColor?: string | null;
+        ctaTextColor?: string | null;
+        enableAnimation?: boolean | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'service-showcase';
+      }
+    | {
+        /**
+         * Leave empty for the theme default.
+         */
+        backgroundColor?: string | null;
+        verticalPadding?: ('sm' | 'md' | 'lg' | 'xl') | null;
+        columnsCount?: ('1' | '2' | '3' | '4') | null;
+        gap?: ('sm' | 'md' | 'lg' | 'xl') | null;
+        /**
+         * Add one or more content, media, or form blocks.
+         */
+        columns: (
+          | ContentBlock
+          | MediaBlock
+          | FormBlock
+          | {
+              /**
+               * Leave empty for the theme default.
+               */
+              backgroundColor?: string | null;
+              heading: string;
+              headingColor?: string | null;
+              textColor?: string | null;
+              iconBackgroundColor?: string | null;
+              iconColor?: string | null;
+              contactItems?:
+                | {
+                    icon:
+                      | 'phone'
+                      | 'mail'
+                      | 'mapPin'
+                      | 'globe'
+                      | 'clock'
+                      | 'building'
+                      | 'user'
+                      | 'messageCircle'
+                      | 'smartphone'
+                      | 'externalLink'
+                      | 'helpCircle';
+                    label: string;
+                    /**
+                     * Supports line breaks for multiple lines (e.g., address).
+                     */
+                    value: string;
+                    subtitle?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              enableMap?: boolean | null;
+              /**
+               * Paste the full Google Maps embed URL.
+               */
+              mapEmbedUrl?: string | null;
+              mapHeight?: string | null;
+              enableAnimation?: boolean | null;
+              id?: string | null;
+              blockName?: string | null;
+              blockType: 'contactInfo';
+            }
+        )[];
+        enableAnimation?: boolean | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'splitContainer';
+      }
+    | {
+        /**
+         * Leave empty for theme default.
+         */
+        sectionBackgroundColor?: string | null;
+        heading: string;
+        headingColor?: string | null;
+        subheading?: string | null;
+        subheadingColor?: string | null;
+        values?:
+          | {
+              icon: 'heart' | 'award' | 'target' | 'globe' | 'star' | 'shield' | 'thumbsUp' | 'briefcase' | 'handshake';
+              title: string;
+              description: string;
+              cardBackgroundColor?: string | null;
+              iconBackgroundColor?: string | null;
+              iconColor?: string | null;
+              titleColor?: string | null;
+              descriptionColor?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        enableAnimation?: boolean | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'values';
+      }
+    | {
+        /**
+         * Leave empty for theme default.
+         */
+        sectionBackgroundColor?: string | null;
+        heading: string;
+        headingColor?: string | null;
+        subheading?: string | null;
+        subheadingColor?: string | null;
+        members?:
+          | {
+              /**
+               * If no photo, a placeholder colour will be shown.
+               */
+              image?: (string | null) | Media;
+              placeholderColor?: string | null;
+              name: string;
+              title?: string | null;
+              languages?: string | null;
+              cardBackgroundColor?: string | null;
+              nameColor?: string | null;
+              titleColor?: string | null;
+              languagesColor?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        enableAnimation?: boolean | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'team-grid';
+      }
+    | {
+        /**
+         * Leave empty for the theme default.
+         */
+        backgroundColor?: string | null;
+        heading?: string | null;
+        headingColor?: string | null;
+        content: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        textColor?: string | null;
+        image: string | Media;
+        imageFit?: ('cover' | 'contain') | null;
+        /**
+         * Leave empty for auto height based on content.
+         */
+        imageMaxHeight?: string | null;
+        imagePosition?: ('right' | 'left') | null;
+        enableOverlay?: boolean | null;
+        overlayColor?: string | null;
+        overlayOpacity?: number | null;
+        enableAnimation?: boolean | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'mediaContent';
+      }
+    | {
+        /**
+         * Leave empty for the theme default.
+         */
+        backgroundColor?: string | null;
+        heading: string;
+        headingColor?: string | null;
+        textColor?: string | null;
+        iconBackgroundColor?: string | null;
+        iconColor?: string | null;
+        contactItems?:
+          | {
+              icon:
+                | 'phone'
+                | 'mail'
+                | 'mapPin'
+                | 'globe'
+                | 'clock'
+                | 'building'
+                | 'user'
+                | 'messageCircle'
+                | 'smartphone'
+                | 'externalLink'
+                | 'helpCircle';
+              label: string;
+              /**
+               * Supports line breaks for multiple lines (e.g., address).
+               */
+              value: string;
+              subtitle?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        enableMap?: boolean | null;
+        /**
+         * Paste the full Google Maps embed URL.
+         */
+        mapEmbedUrl?: string | null;
+        mapHeight?: string | null;
+        enableAnimation?: boolean | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'contactInfo';
       }
   )[];
   meta?: {
@@ -1215,25 +1587,18 @@ export interface ContentBlock {
          * Align content inside the column
          */
         alignment?: ('left' | 'center' | 'right') | null;
-        link?: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: string | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: string | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-          /**
-           * Choose how the link should be rendered.
-           */
-          appearance?: ('default' | 'outline') | null;
-        };
+        linkType?: ('reference' | 'custom') | null;
+        linkReference?: (string | null) | Page;
+        linkUrl?: string | null;
+        linkLabel?: string | null;
+        linkNewTab?: boolean | null;
+        buttonStyle?: ('solid' | 'outline') | null;
+        buttonBgColor?: string | null;
+        buttonTextColor?: string | null;
+        buttonHoverBgColor?: string | null;
+        buttonHoverTextColor?: string | null;
+        buttonBorderColor?: string | null;
+        buttonBorderRadius?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -1249,6 +1614,7 @@ export interface ContentBlock {
    * Only applies if a background color is selected.
    */
   backgroundOpacity?: number | null;
+  enableAnimation?: boolean | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'content';
@@ -1260,9 +1626,21 @@ export interface ContentBlock {
 export interface MediaBlock {
   media: string | Media;
   /**
-   * Leave empty for full width (within container)
+   * How the image should fill its container.
    */
-  width?: number | null;
+  layout?: ('cover' | 'contain' | 'natural') | null;
+  /**
+   * Any CSS value. Leave blank for no max width.
+   */
+  maxWidth?: string | null;
+  /**
+   * Forces a specific shape when using cover/contain.
+   */
+  aspectRatio?: ('auto' | '16/9' | '4/3' | '1/1' | '3/2' | '2/3') | null;
+  /**
+   * CSS object-position value.
+   */
+  objectPosition?: string | null;
   alignment?: ('left' | 'center' | 'right') | null;
   enableBackground?: boolean | null;
   backgroundColor?: string | null;
@@ -2211,12 +2589,14 @@ export interface PagesSelect<T extends boolean = true> {
           | T
           | {
               backgroundColor?: T;
+              textColor?: T;
               badges?:
                 | T
                 | {
                     icon?: T;
                     text?: T;
                     iconColor?: T;
+                    textColor?: T;
                     id?: T;
                   };
               columns?: T;
@@ -2246,6 +2626,252 @@ export interface PagesSelect<T extends boolean = true> {
                     iconColor?: T;
                     id?: T;
                   };
+              enableAnimation?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'team-section'?:
+          | T
+          | {
+              backgroundColor?: T;
+              contentWidth?: T;
+              image?: T;
+              overlayGradientStart?: T;
+              overlayGradientEnd?: T;
+              overlayOpacity?: T;
+              heading?: T;
+              headingColor?: T;
+              content?: T;
+              quoteText?: T;
+              quoteBorderColor?: T;
+              enableAnimation?: T;
+              id?: T;
+              blockName?: T;
+            };
+        testimonials?:
+          | T
+          | {
+              backgroundColor?: T;
+              heading?: T;
+              headingColor?: T;
+              subheading?: T;
+              subheadingColor?: T;
+              testimonials?:
+                | T
+                | {
+                    quote?: T;
+                    author?: T;
+                    business?: T;
+                    quoteIconColor?: T;
+                    cardBgColor?: T;
+                    cardBorderColor?: T;
+                    authorColor?: T;
+                    businessColor?: T;
+                    id?: T;
+                  };
+              columns?: T;
+              ctaLabel?: T;
+              ctaUrl?: T;
+              ctaNewTab?: T;
+              ctaBgColor?: T;
+              ctaTextColor?: T;
+              enableAnimation?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'service-showcase'?:
+          | T
+          | {
+              topBackgroundImage?: T;
+              topBackgroundColor?: T;
+              topHeight?: T;
+              topCustomHeight?: T;
+              heading?: T;
+              headingColor?: T;
+              subheading?: T;
+              subheadingColor?: T;
+              serviceBackgroundColor?: T;
+              services?:
+                | T
+                | {
+                    icon?: T;
+                    title?: T;
+                    description?: T;
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    cardBgColor?: T;
+                    cardBorderColor?: T;
+                    iconBgColor?: T;
+                    iconColor?: T;
+                    titleColor?: T;
+                    descriptionColor?: T;
+                    featureCheckColor?: T;
+                    featureTextColor?: T;
+                    id?: T;
+                  };
+              whyChooseUsBackgroundColor?: T;
+              whyChooseUsHeading?: T;
+              whyChooseUsHeadingColor?: T;
+              whyChooseUsItems?:
+                | T
+                | {
+                    icon?: T;
+                    title?: T;
+                    description?: T;
+                    iconBgColor?: T;
+                    iconColor?: T;
+                    titleColor?: T;
+                    descriptionColor?: T;
+                    id?: T;
+                  };
+              ctaBackgroundColor?: T;
+              ctaLabel?: T;
+              ctaUrl?: T;
+              ctaNewTab?: T;
+              ctaBgColor?: T;
+              ctaTextColor?: T;
+              enableAnimation?: T;
+              id?: T;
+              blockName?: T;
+            };
+        splitContainer?:
+          | T
+          | {
+              backgroundColor?: T;
+              verticalPadding?: T;
+              columnsCount?: T;
+              gap?: T;
+              columns?:
+                | T
+                | {
+                    content?: T | ContentBlockSelect<T>;
+                    mediaBlock?: T | MediaBlockSelect<T>;
+                    formBlock?: T | FormBlockSelect<T>;
+                    contactInfo?:
+                      | T
+                      | {
+                          backgroundColor?: T;
+                          heading?: T;
+                          headingColor?: T;
+                          textColor?: T;
+                          iconBackgroundColor?: T;
+                          iconColor?: T;
+                          contactItems?:
+                            | T
+                            | {
+                                icon?: T;
+                                label?: T;
+                                value?: T;
+                                subtitle?: T;
+                                id?: T;
+                              };
+                          enableMap?: T;
+                          mapEmbedUrl?: T;
+                          mapHeight?: T;
+                          enableAnimation?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                  };
+              enableAnimation?: T;
+              id?: T;
+              blockName?: T;
+            };
+        values?:
+          | T
+          | {
+              sectionBackgroundColor?: T;
+              heading?: T;
+              headingColor?: T;
+              subheading?: T;
+              subheadingColor?: T;
+              values?:
+                | T
+                | {
+                    icon?: T;
+                    title?: T;
+                    description?: T;
+                    cardBackgroundColor?: T;
+                    iconBackgroundColor?: T;
+                    iconColor?: T;
+                    titleColor?: T;
+                    descriptionColor?: T;
+                    id?: T;
+                  };
+              enableAnimation?: T;
+              id?: T;
+              blockName?: T;
+            };
+        'team-grid'?:
+          | T
+          | {
+              sectionBackgroundColor?: T;
+              heading?: T;
+              headingColor?: T;
+              subheading?: T;
+              subheadingColor?: T;
+              members?:
+                | T
+                | {
+                    image?: T;
+                    placeholderColor?: T;
+                    name?: T;
+                    title?: T;
+                    languages?: T;
+                    cardBackgroundColor?: T;
+                    nameColor?: T;
+                    titleColor?: T;
+                    languagesColor?: T;
+                    id?: T;
+                  };
+              enableAnimation?: T;
+              id?: T;
+              blockName?: T;
+            };
+        mediaContent?:
+          | T
+          | {
+              backgroundColor?: T;
+              heading?: T;
+              headingColor?: T;
+              content?: T;
+              textColor?: T;
+              image?: T;
+              imageFit?: T;
+              imageMaxHeight?: T;
+              imagePosition?: T;
+              enableOverlay?: T;
+              overlayColor?: T;
+              overlayOpacity?: T;
+              enableAnimation?: T;
+              id?: T;
+              blockName?: T;
+            };
+        contactInfo?:
+          | T
+          | {
+              backgroundColor?: T;
+              heading?: T;
+              headingColor?: T;
+              textColor?: T;
+              iconBackgroundColor?: T;
+              iconColor?: T;
+              contactItems?:
+                | T
+                | {
+                    icon?: T;
+                    label?: T;
+                    value?: T;
+                    subtitle?: T;
+                    id?: T;
+                  };
+              enableMap?: T;
+              mapEmbedUrl?: T;
+              mapHeight?: T;
               enableAnimation?: T;
               id?: T;
               blockName?: T;
@@ -2302,21 +2928,24 @@ export interface ContentBlockSelect<T extends boolean = true> {
         richText?: T;
         enableLink?: T;
         alignment?: T;
-        link?:
-          | T
-          | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
-              appearance?: T;
-            };
+        linkType?: T;
+        linkReference?: T;
+        linkUrl?: T;
+        linkLabel?: T;
+        linkNewTab?: T;
+        buttonStyle?: T;
+        buttonBgColor?: T;
+        buttonTextColor?: T;
+        buttonHoverBgColor?: T;
+        buttonHoverTextColor?: T;
+        buttonBorderColor?: T;
+        buttonBorderRadius?: T;
         id?: T;
       };
   containerMaxWidth?: T;
   backgroundColor?: T;
   backgroundOpacity?: T;
+  enableAnimation?: T;
   id?: T;
   blockName?: T;
 }
@@ -2326,7 +2955,10 @@ export interface ContentBlockSelect<T extends boolean = true> {
  */
 export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
-  width?: T;
+  layout?: T;
+  maxWidth?: T;
+  aspectRatio?: T;
+  objectPosition?: T;
   alignment?: T;
   enableBackground?: T;
   backgroundColor?: T;
@@ -2762,6 +3394,18 @@ export interface Footer {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Leave empty for the theme default.
+   */
+  backgroundColor?: string | null;
+  /**
+   * Leave empty for the theme default.
+   */
+  textColor?: string | null;
+  /**
+   * Used for the contact icons (phone, mail, map, etc.).
+   */
+  iconColor?: string | null;
   logo?: (string | null) | Media;
   description?: {
     root: {
@@ -2780,8 +3424,23 @@ export interface Footer {
   } | null;
   socialBadges?:
     | {
-        image: string | Media;
-        link?: string | null;
+        icon: 'facebook' | 'instagram' | 'linkedin' | 'music' | 'youtube' | 'twitter' | 'globe';
+        url: string;
+        newTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  quickLinks?:
+    | {
+        label: string;
+        url: string;
+        newTab?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  services?:
+    | {
+        label: string;
         id?: string | null;
       }[]
     | null;
@@ -2790,6 +3449,7 @@ export interface Footer {
     phone?: string | null;
     email?: string | null;
     hours?: string | null;
+    location?: string | null;
     partnerHotel?: {
       label?: string | null;
       logo?: (string | null) | Media;
@@ -2940,13 +3600,31 @@ export interface FooterSelect<T extends boolean = true> {
         newTab?: T;
         id?: T;
       };
+  backgroundColor?: T;
+  textColor?: T;
+  iconColor?: T;
   logo?: T;
   description?: T;
   socialBadges?:
     | T
     | {
-        image?: T;
-        link?: T;
+        icon?: T;
+        url?: T;
+        newTab?: T;
+        id?: T;
+      };
+  quickLinks?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        newTab?: T;
+        id?: T;
+      };
+  services?:
+    | T
+    | {
+        label?: T;
         id?: T;
       };
   reachUs?:
@@ -2956,6 +3634,7 @@ export interface FooterSelect<T extends boolean = true> {
         phone?: T;
         email?: T;
         hours?: T;
+        location?: T;
         partnerHotel?:
           | T
           | {

@@ -31,10 +31,12 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 type TrustBadgeProps = {
   backgroundColor?: string | null
+  textColor?: string | null // ← section‑wide
   badges?: {
     icon: string
     text: string
     iconColor?: string | null
+    textColor?: string | null // ← per‑badge override
     id?: string | null
   }[]
   columns?: string | null
@@ -43,6 +45,7 @@ type TrustBadgeProps = {
 
 export const TrustBadgesBlockComponent: React.FC<TrustBadgeProps> = ({
   backgroundColor,
+  textColor, // ← add this
   badges,
   columns = '4',
 }) => {
@@ -68,9 +71,11 @@ export const TrustBadgesBlockComponent: React.FC<TrustBadgeProps> = ({
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className={`grid ${colClass} gap-6`}>
+          {/* Inside the badge map */}
           {badges.map((badge, idx) => {
             const IconComponent = ICON_MAP[badge.icon] || Star
             const iconColor = badge.iconColor || 'var(--color-primary)'
+            const resolvedTextColor = badge.textColor || textColor || 'var(--color-text)'
 
             return (
               <div
@@ -78,7 +83,7 @@ export const TrustBadgesBlockComponent: React.FC<TrustBadgeProps> = ({
                 className="flex items-center gap-3 justify-center md:justify-start"
               >
                 <IconComponent className="h-6 w-6 flex-shrink-0" style={{ color: iconColor }} />
-                <span className="text-sm" style={{ color: 'var(--color-text)' }}>
+                <span className="text-sm" style={{ color: resolvedTextColor }}>
                   {badge.text}
                 </span>
               </div>

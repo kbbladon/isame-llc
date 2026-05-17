@@ -5,11 +5,21 @@ import { cn } from '@/utilities/ui'
 import React from 'react'
 import { motion } from 'framer-motion'
 import RichText from '@/components/RichText'
-import { CMSLink } from '@/components/Link'
 
-type Props = { className?: string } & ContentBlockProps
+// ---------------------------------------------------------------------------
+// Helper – safely resolve the link href from the CMS link object
+// ---------------------------------------------------------------------------
+const getLinkHref = (link: any): string => {
+  if (!link) return '#'
+  if (link.type === 'reference' && link.reference?.slug) {
+    return `/${link.reference.slug}`
+  }
+  return link.url || '#'
+}
 
-// Helper to convert hex to rgba
+// ---------------------------------------------------------------------------
+// Helper – convert a hex colour to rgba (for background opacity)
+// ---------------------------------------------------------------------------
 const hexToRgba = (hex: string, alpha: number): string => {
   const cleanHex = hex.replace('#', '')
   const r = parseInt(cleanHex.substring(0, 2), 16)
@@ -18,13 +28,19 @@ const hexToRgba = (hex: string, alpha: number): string => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
+type Props = { className?: string } & ContentBlockProps
+
 export const ContentBlock: React.FC<Props> = ({
   className,
   columns,
   containerMaxWidth,
   backgroundColor,
   backgroundOpacity,
+  enableAnimation = true,
 }) => {
+  // -------------------------------------------------------------------------
+  // Width / alignment / animation helpers
+  // -------------------------------------------------------------------------
   const sizeToClass = {
     full: 'lg:col-span-12',
     half: 'lg:col-span-6',
@@ -42,8 +58,11 @@ export const ContentBlock: React.FC<Props> = ({
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
   }
+
+  // -------------------------------------------------------------------------
+  // Section background (with optional opacity)
+  // -------------------------------------------------------------------------
   const opacity = backgroundOpacity ?? 1
-  // Background style
   let bgStyle: React.CSSProperties = {}
   if (backgroundColor && backgroundColor !== 'transparent') {
     if (opacity < 1) {
@@ -55,7 +74,6 @@ export const ContentBlock: React.FC<Props> = ({
     bgStyle.backgroundColor = 'transparent'
   }
 
-  // Container width style
   const containerStyle: React.CSSProperties = containerMaxWidth
     ? { maxWidth: `${containerMaxWidth}px` }
     : {}
@@ -67,16 +85,111 @@ export const ContentBlock: React.FC<Props> = ({
           <div className="grid grid-cols-4 lg:grid-cols-12 gap-y-12 gap-x-8 lg:gap-x-16">
             {columns?.map((col, index) => {
               const enableLink = col.enableLink ?? false
-              const link = col.link
               const richText = col.richText
               const size = col.size ?? 'full'
-              const buttonAlignment = (link as any)?.alignment ?? 'center'
+              const alignment = col.alignment ?? 'center'
               const alignmentClass =
-                buttonAlignmentClasses[buttonAlignment as keyof typeof buttonAlignmentClasses] ||
+                buttonAlignmentClasses[alignment as keyof typeof buttonAlignmentClasses] ||
                 'text-center'
               const spanClass = sizeToClass[size] || 'lg:col-span-4'
 
-              return (
+              // ---------------------------------------------------------------
+              // Reconstruct the link object from the separate CMS fields
+              // ---------------------------------------------------------------
+              const linkType = (col as any).linkType || 'custom'
+              const linkRef = (col as any).linkReference
+              const linkUrl = (col as any).linkUrl
+              const linkLabel = (col as any).linkLabel
+              const linkNewTab = (col as any).linkNewTab ?? false
+
+              const linkObject = enableLink
+                ? {
+                    type: linkType,
+                    ...(linkType === 'reference' ? { reference: linkRef } : { url: linkUrl }),
+                    label: linkLabel || 'Learn More',
+                    newTab: linkNewTab,
+                  }
+                : undefined
+
+              const href = linkObject ? getLinkHref(linkObject) : '#'
+
+              // ---------------------------------------------------------------
+              // Button style customisation (solid / outline)
+              // ---------------------------------------------------------------
+              const buttonStyle = (col as any).buttonStyle || 'solid'
+              const customBg = (col as any).buttonBgColor
+              const customText = (col as any).buttonTextColor
+              const customHoverBg = (col as any).buttonHoverBgColor
+              const customHoverText = (col as any).buttonHoverTextColor
+              const customBorder = (col as any).buttonBorderColor
+              const customRadius = (col as any).buttonBorderRadius || '0.375rem'
+
+              const linkStyle: React.CSSProperties = {
+                borderRadius: customRadius,
+                padding: '0.75rem 2rem',
+                transition: 'all 0.2s ease',
+              }
+
+              if (buttonStyle === 'solid') {
+                linkStyle.backgroundColor = customBg || 'var(--color-primary)'
+                linkStyle.color = customText || '#1A1A1A'
+                linkStyle.border = 'none'
+              } else {
+                linkStyle.backgroundColor = 'transparent'
+                linkStyle.color = customText || 'var(--color-primary)'
+                linkStyle.border = `2px solid ${customBorder || 'var(--color-primary)'}`
+              }
+
+              // ---------------------------------------------------------------
+              // Hover effect (scoped <style>)
+              // ---------------------------------------------------------------
+              const hoverId = `cta-hover-${index}`
+              const hoverStyles = `
+                #${hoverId}:hover {
+                  background-color: ${customHoverBg || (buttonStyle === 'solid' ? 'var(--color-secondary)' : 'transparent')} !important;
+                  color: ${customHoverText || (buttonStyle === 'solid' ? '#1A1A1A' : 'var(--color-primary)')} !important;
+                  ${buttonStyle === 'outline' ? `border-color: ${customHoverBg || 'var(--color-secondary)'} !important;` : ''}
+                }
+              `
+
+              // ---------------------------------------------------------------
+              // Column content
+              // ---------------------------------------------------------------
+              const content = (
+                <>
+                  {richText && (
+                    <div className="w-full">
+                      <RichText data={richText} enableGutter={false} />
+                    </div>
+                  )}
+                  {enableLink && linkObject && (
+                    <div className={cn('mt-8', alignmentClass)}>
+                      <style>{hoverStyles}</style>
+                      <span id={hoverId} style={linkStyle} className="inline-block">
+                        <a
+                          href={href}
+                          target={linkObject.newTab ? '_blank' : undefined}
+                          rel={linkObject.newTab ? 'noopener noreferrer' : undefined}
+                          style={{
+                            display: 'inline-block',
+                            width: '100%',
+                            height: '100%',
+                            color: 'inherit',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          {linkObject.label}
+                        </a>
+                      </span>
+                    </div>
+                  )}
+                </>
+              )
+
+              // ---------------------------------------------------------------
+              // Animation wrapper (optional)
+              // ---------------------------------------------------------------
+              return enableAnimation ? (
                 <motion.div
                   key={index}
                   className={cn('col-span-4 flex flex-col', spanClass)}
@@ -86,17 +199,12 @@ export const ContentBlock: React.FC<Props> = ({
                   variants={fadeUpVariant}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
                 >
-                  {richText && (
-                    <div className="w-full">
-                      <RichText data={richText} enableGutter={false} />
-                    </div>
-                  )}
-                  {enableLink && link && (
-                    <div className={cn('mt-8', alignmentClass)}>
-                      <CMSLink {...link} className="btn-gold-live" />
-                    </div>
-                  )}
+                  {content}
                 </motion.div>
+              ) : (
+                <div key={index} className={cn('col-span-4 flex flex-col', spanClass)}>
+                  {content}
+                </div>
               )
             })}
           </div>

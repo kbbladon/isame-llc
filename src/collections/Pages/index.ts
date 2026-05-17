@@ -26,6 +26,14 @@ import { ImageRow } from '@/blocks/ImageRow/config'
 import { TableBlock } from '@/blocks/Table/config'
 import { TrustBadgesBlock } from '@/blocks/TrustBadges/config'
 import { FeatureSectionBlock } from '@/blocks/FeatureSection/config'
+import { TeamSectionBlock } from '@/blocks/TeamSection/config'
+import { TestimonialsBlock } from '@/blocks/Testimonials/config'
+import { ServiceShowcaseBlock } from '@/blocks/ServiceShowcase/config'
+import { SplitContainer } from '@/blocks/SplitContainer/config'
+import { ValuesBlock } from '@/blocks/Values/config'
+import { TeamGridBlock } from '@/blocks/TeamGrid/config'
+import { MediaContent } from '../../blocks/MediaContent/config'
+import { ContactInfoBlock } from '../../blocks/ContactInfo/config'
 import {
   MetaDescriptionField,
   MetaImageField,
@@ -156,6 +164,14 @@ export const Pages: CollectionConfig<'pages'> = {
                 TableBlock,
                 TrustBadgesBlock,
                 FeatureSectionBlock,
+                TeamSectionBlock,
+                TestimonialsBlock,
+                ServiceShowcaseBlock,
+                SplitContainer,
+                ValuesBlock,
+                TeamGridBlock,
+                MediaContent,
+                ContactInfoBlock,
               ],
               required: true,
               admin: {

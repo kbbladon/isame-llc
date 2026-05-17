@@ -17,17 +17,20 @@ type Props = MediaBlockProps & {
   imgClassName?: string
   staticImage?: StaticImageData
   disableInnerContainer?: boolean
-  // New props from config
-  width?: number
+  // responsive props
+  layout?: 'cover' | 'contain' | 'natural'
+  maxWidth?: string | null
+  aspectRatio?: string | null
+  objectPosition?: string | null
   alignment?: 'left' | 'center' | 'right'
   enableBackground?: boolean
-  backgroundColor?: string
-  backgroundPadding?: string
-  roundedCorners?: string
+  backgroundColor?: string | null
+  backgroundPadding?: string | null
+  roundedCorners?: string | null
   enableOverlay?: boolean
   overlayOpacity?: number
   caption?: any
-  link?: string
+  link?: string | null
   newTab?: boolean
 }
 
@@ -40,11 +43,13 @@ export const MediaBlock: React.FC<Props> = (props) => {
     media,
     staticImage,
     disableInnerContainer,
-    // New props
-    width,
+    layout = 'cover',
+    maxWidth,
+    aspectRatio = 'auto',
+    objectPosition = 'center',
     alignment = 'center',
     enableBackground = false,
-    backgroundColor = '#000000',
+    backgroundColor,
     backgroundPadding = 'p-6',
     roundedCorners = 'rounded-md',
     enableOverlay = false,
@@ -54,86 +59,68 @@ export const MediaBlock: React.FC<Props> = (props) => {
     newTab = false,
   } = props
 
-  // Determine the image source (dynamic media vs static import)
+  // image source
   const imgSrc =
     media && typeof media === 'object' && 'url' in media
       ? ((media as any).url as string)
       : staticImage?.src || ''
 
-  // Apply Cloudinary auto‑optimizations (f_auto,q_auto) and explicit width if needed
-  const optimizedSrc = optimizedCloudinaryUrl(
-    imgSrc,
-    width ?? undefined, // pass width only if defined
-  )
+  const optimizedSrc = optimizedCloudinaryUrl(imgSrc, undefined)
 
-  // Caption logic
+  // caption
   let caption = captionFromProps
   if (!caption && media && typeof media === 'object') caption = (media as any).caption
 
-  // Alignment mapping
   const alignmentClass = {
-    left: 'text-left',
-    center: 'text-center',
-    right: 'text-right',
+    left: 'mr-auto',
+    center: 'mx-auto',
+    right: 'ml-auto',
   }[alignment]
 
-  // If a specific width is set, we use it as a max‑width container.
-  // Next.js Image with `fill` is used when no fixed width is given,
-  // so we need a relative container with defined aspect‑ratio.
-  const isFixedWidth = Boolean(width)
+  const objectFitClass =
+    layout === 'cover'
+      ? 'object-cover'
+      : layout === 'contain'
+        ? 'object-contain'
+        : 'object-scale-down'
+
+  const aspectClass = aspectRatio !== 'auto' ? `aspect-[${aspectRatio}]` : ''
 
   const imageElement = (
     <div
       className={cn(
-        'relative inline-block',
-        alignment === 'center' && 'mx-auto',
-        alignment === 'left' && 'mr-auto',
-        alignment === 'right' && 'ml-auto',
+        'relative w-full h-full',
+        !aspectClass && layout !== 'natural' && 'aspect-[16/9]',
+        aspectClass,
+        alignmentClass,
       )}
-      style={isFixedWidth ? { maxWidth: `${width}px` } : undefined}
+      style={{ maxWidth: maxWidth || undefined }}
     >
-      {/* Background wrapper (if enabled) */}
       <div
         className={cn(
+          'h-full overflow-hidden',
           enableBackground && backgroundColor,
           enableBackground && backgroundPadding,
           roundedCorners,
-          'overflow-hidden', // ensures the image respects rounded corners
         )}
-        style={enableBackground ? { backgroundColor } : undefined}
+        style={enableBackground ? { backgroundColor: backgroundColor || undefined } : undefined}
       >
-        {isFixedWidth ? (
-          // Fixed‑width image: use the width/height from media metadata
+        <div className="relative w-full h-full">
           <Image
             src={optimizedSrc}
             alt={(media as any)?.alt || ''}
-            width={width}
-            height={
-              media && typeof media === 'object'
-                ? Math.round((width! / (media as any).width) * (media as any).height)
-                : 800
-            }
-            className={cn('rounded-[0.8rem] border border-border', imgClassName)}
-            sizes={`${width}px`}
+            fill
+            className={cn(objectFitClass, imgClassName)}
+            style={{ objectPosition: objectPosition ?? 'center' }}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            unoptimized
           />
-        ) : (
-          // Fluid image: fill the available container
-          <div className="relative w-full aspect-[16/9]">
-            <Image
-              src={optimizedSrc}
-              alt={(media as any)?.alt || ''}
-              fill
-              className={cn('rounded-[0.8rem] border border-border object-cover', imgClassName)}
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* Overlay (if enabled) */}
       {enableOverlay && (
         <div
-          className="absolute inset-0 pointer-events-none rounded-[0.8rem]"
+          className="absolute inset-0 pointer-events-none"
           style={{
             background: `linear-gradient(to bottom, rgba(0,0,0,${overlayOpacity}), rgba(0,0,0,${overlayOpacity}))`,
           }}

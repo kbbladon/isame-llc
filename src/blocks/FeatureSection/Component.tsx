@@ -15,9 +15,8 @@ import {
   Handshake,
   type LucideIcon,
 } from 'lucide-react'
-import AnimateOnScroll from '@/components/AnimateOnScroll' // relative import
+import AnimateOnScroll from '@/components/AnimateOnScroll'
 
-// Icon map (same as block config options)
 const ICON_MAP: Record<string, LucideIcon> = {
   heart: Heart,
   fileText: FileText,
@@ -68,6 +67,7 @@ export const FeatureSectionBlockComponent: React.FC<FeatureSectionProps> = ({
   if (!features || features.length === 0) return null
 
   const cols = parseInt(columns, 10)
+  // Correct grid column classes – index 2 = 'grid-cols-2', 3 = 'grid-cols-3', 4 = 'grid-cols-4'
   const gridCols = ['', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4']
   const colClass = gridCols[Math.min(cols, 4)] || 'grid-cols-3'
 
@@ -102,22 +102,23 @@ export const FeatureSectionBlockComponent: React.FC<FeatureSectionProps> = ({
           )}
         </div>
 
-        {/* Feature cards */}
+        {/* Feature cards – equal height guaranteed */}
         <div className={`grid grid-cols-1 md:${colClass} gap-8`}>
           {features.map((feature, index) => {
             const IconComponent = ICON_MAP[feature.icon] || Heart
             const isAnimated = enableAnimation
 
-            const content = (
+            const cardContent = (
               <div
-                className="p-8 rounded-lg border-2 hover:shadow-xl transition-shadow"
+                className="flex flex-col h-full p-8 rounded-lg border-2 hover:shadow-xl transition-shadow"
                 style={{
                   backgroundColor: feature.cardBgColor || 'var(--color-surface)',
                   borderColor: feature.cardBorderColor || 'var(--color-border)',
                 }}
               >
+                {/* Icon circle */}
                 <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center mb-6"
+                  className="w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto"
                   style={{
                     backgroundColor: feature.iconBgColor || 'var(--color-primary)',
                   }}
@@ -128,8 +129,9 @@ export const FeatureSectionBlockComponent: React.FC<FeatureSectionProps> = ({
                   />
                 </div>
 
+                {/* Title */}
                 <h3
-                  className="text-2xl mb-4"
+                  className="text-2xl mb-4 text-center"
                   style={{
                     fontFamily: 'var(--font-heading)',
                     color: feature.titleColor || 'var(--color-text)',
@@ -138,8 +140,9 @@ export const FeatureSectionBlockComponent: React.FC<FeatureSectionProps> = ({
                   {feature.title}
                 </h3>
 
+                {/* Description – expands naturally */}
                 <p
-                  className="leading-relaxed"
+                  className="leading-relaxed flex-1 text-center"
                   style={{ color: feature.descriptionColor || 'var(--color-muted)' }}
                 >
                   {feature.description}
@@ -147,12 +150,22 @@ export const FeatureSectionBlockComponent: React.FC<FeatureSectionProps> = ({
               </div>
             )
 
+            // Ensure the wrapper stretches to full height of the grid cell
+            const wrapperClasses = 'h-full'
+
             return isAnimated ? (
-              <AnimateOnScroll key={feature.id || index} preset="fadeUp" delay={index * 0.1}>
-                {content}
+              <AnimateOnScroll
+                key={feature.id || index}
+                preset="fadeUp"
+                delay={index * 0.1}
+                className={wrapperClasses}
+              >
+                {cardContent}
               </AnimateOnScroll>
             ) : (
-              <div key={feature.id || index}>{content}</div>
+              <div key={feature.id || index} className={wrapperClasses}>
+                {cardContent}
+              </div>
             )
           })}
         </div>

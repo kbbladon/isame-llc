@@ -8,6 +8,7 @@ export const Footer: GlobalConfig = {
     read: () => true,
   },
   fields: [
+    // Layout selector
     {
       name: 'layout',
       type: 'select',
@@ -18,7 +19,8 @@ export const Footer: GlobalConfig = {
         { label: 'Advanced (multi‑column, rich content)', value: 'advanced' },
       ],
     },
-    // Simple layout – localizable navigation links
+
+    // ---------- SIMPLE LAYOUT ----------
     {
       name: 'navItems',
       type: 'array',
@@ -51,7 +53,40 @@ export const Footer: GlobalConfig = {
       ],
       maxRows: 6,
     },
-    // Advanced layout fields
+
+    // ---------- ADVANCED LAYOUT ----------
+    // 🌈 Global footer styling (optional – falls back to theme)
+    {
+      name: 'backgroundColor',
+      type: 'text',
+      label: 'Background Colour',
+      admin: {
+        condition: (_, siblingData) => siblingData?.layout === 'advanced',
+        components: { Field: '@/components/ThemeColorPicker#default' },
+        description: 'Leave empty for the theme default.',
+      },
+    },
+    {
+      name: 'textColor',
+      type: 'text',
+      label: 'Text Colour',
+      admin: {
+        condition: (_, siblingData) => siblingData?.layout === 'advanced',
+        components: { Field: '@/components/ThemeColorPicker#default' },
+        description: 'Leave empty for the theme default.',
+      },
+    },
+    {
+      name: 'iconColor',
+      type: 'text',
+      label: 'Icon Colour',
+      admin: {
+        condition: (_, siblingData) => siblingData?.layout === 'advanced',
+        components: { Field: '@/components/ThemeColorPicker#default' },
+        description: 'Used for the contact icons (phone, mail, map, etc.).',
+      },
+    },
+
     {
       name: 'logo',
       type: 'upload',
@@ -74,25 +109,92 @@ export const Footer: GlobalConfig = {
     {
       name: 'socialBadges',
       type: 'array',
-      label: 'Social / Trust Badges',
+      label: 'Social Links',
       admin: {
         condition: (_, siblingData) => siblingData?.layout === 'advanced',
       },
       fields: [
         {
-          name: 'image',
-          type: 'upload',
-          relationTo: 'media',
-          label: 'Badge Image',
+          name: 'icon',
+          type: 'select',
+          label: 'Platform',
+          options: [
+            { label: 'Facebook', value: 'facebook' },
+            { label: 'Instagram', value: 'instagram' },
+            { label: 'LinkedIn', value: 'linkedin' },
+            { label: 'TikTok', value: 'music' }, // Lucide uses "Music" for TikTok
+            { label: 'YouTube', value: 'youtube' },
+            { label: 'Twitter / X', value: 'twitter' },
+            { label: 'Globe (website)', value: 'globe' },
+          ],
           required: true,
         },
         {
-          name: 'link',
+          name: 'url',
           type: 'text',
-          label: 'Link URL (optional)',
+          label: 'Link URL',
+          required: true,
+        },
+        {
+          name: 'newTab',
+          type: 'checkbox',
+          label: 'Open in new tab',
+          defaultValue: true,
         },
       ],
     },
+
+    // Quick Links column
+    {
+      name: 'quickLinks',
+      type: 'array',
+      label: 'Quick Links',
+      admin: {
+        condition: (_, siblingData) => siblingData?.layout === 'advanced',
+      },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          label: 'Label',
+          localized: true,
+          required: true,
+        },
+        {
+          name: 'url',
+          type: 'text',
+          label: 'URL',
+          required: true,
+        },
+        {
+          name: 'newTab',
+          type: 'checkbox',
+          label: 'Open in new tab',
+          defaultValue: false,
+        },
+      ],
+    },
+
+    // Services column
+    {
+      name: 'services',
+      type: 'array',
+      label: 'Services',
+      admin: {
+        condition: (_, siblingData) => siblingData?.layout === 'advanced',
+      },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          label: 'Service Name',
+          localized: true,
+          required: true,
+        },
+      ],
+    },
+
+    // Reach Us section – ONE group with all fields
     {
       name: 'reachUs',
       type: 'group',
@@ -124,6 +226,12 @@ export const Footer: GlobalConfig = {
           name: 'hours',
           type: 'text',
           label: 'Business Hours',
+          localized: true,
+        },
+        {
+          name: 'location',
+          type: 'text',
+          label: 'Office Location',
           localized: true,
         },
         {
@@ -159,6 +267,7 @@ export const Footer: GlobalConfig = {
         },
       ],
     },
+
     {
       name: 'mapEmbedUrl',
       type: 'text',
@@ -172,7 +281,7 @@ export const Footer: GlobalConfig = {
       name: 'copyright',
       type: 'text',
       label: 'Copyright Text',
-      defaultValue: 'Copyright © 2026 Mata Rocks Resort. All Rights Reserved. Belize.',
+      defaultValue: 'Copyright © 2026 Isame Credit Collection Ltd. All Rights Reserved. Belize.',
       localized: true,
       admin: {
         condition: (_, siblingData) => siblingData?.layout === 'advanced',

@@ -11,20 +11,61 @@ export const MediaBlock: Block = {
       relationTo: 'media',
       required: true,
     },
-    // ----- Advanced options -----
+    // ----- Responsive layout -----
     {
-      name: 'width',
-      type: 'number',
-      label: 'Image Width (pixels)',
-      defaultValue: undefined,
+      name: 'layout',
+      type: 'select',
+      label: 'Image Fit',
+      defaultValue: 'cover',
+      options: [
+        { label: 'Cover (fills container)', value: 'cover' },
+        { label: 'Contain (letterbox)', value: 'contain' },
+        { label: 'Natural width (responsive)', value: 'natural' },
+      ],
       admin: {
-        description: 'Leave empty for full width (within container)',
+        description: 'How the image should fill its container.',
       },
     },
     {
+      name: 'maxWidth',
+      type: 'text',
+      label: 'Max Width (optional)',
+      admin: {
+        placeholder: 'e.g., 100% or 600px',
+        description: 'Any CSS value. Leave blank for no max width.',
+      },
+    },
+    {
+      name: 'aspectRatio',
+      type: 'select',
+      label: 'Aspect Ratio (for fill modes)',
+      defaultValue: 'auto',
+      options: [
+        { label: 'Auto (use image natural)', value: 'auto' },
+        { label: '16:9', value: '16/9' },
+        { label: '4:3', value: '4/3' },
+        { label: '1:1', value: '1/1' },
+        { label: '3:2', value: '3/2' },
+        { label: '2:3', value: '2/3' },
+      ],
+      admin: {
+        description: 'Forces a specific shape when using cover/contain.',
+      },
+    },
+    {
+      name: 'objectPosition',
+      type: 'text',
+      label: 'Focal Point (e.g., center, top, 20% 50%)',
+      defaultValue: 'center',
+      admin: {
+        description: 'CSS object-position value.',
+      },
+    },
+    // ----- Alignment -----
+    {
       name: 'alignment',
       type: 'select',
-      label: 'Alignment',
+      label: 'Block Alignment',
       defaultValue: 'center',
       options: [
         { label: 'Left', value: 'left' },
@@ -32,6 +73,7 @@ export const MediaBlock: Block = {
         { label: 'Right', value: 'right' },
       ],
     },
+    // ----- Visual extras (unchanged) -----
     {
       name: 'enableBackground',
       type: 'checkbox',
@@ -51,7 +93,7 @@ export const MediaBlock: Block = {
       name: 'backgroundPadding',
       type: 'select',
       label: 'Background Padding',
-      defaultValue: 'md',
+      defaultValue: 'p-6',
       options: [
         { label: 'None', value: '0' },
         { label: 'Small (p-4)', value: 'p-4' },
@@ -66,7 +108,7 @@ export const MediaBlock: Block = {
       name: 'roundedCorners',
       type: 'select',
       label: 'Rounded Corners',
-      defaultValue: 'md',
+      defaultValue: 'rounded-md',
       options: [
         { label: 'None', value: 'rounded-none' },
         { label: 'Small', value: 'rounded' },
@@ -89,10 +131,7 @@ export const MediaBlock: Block = {
       defaultValue: 0.5,
       min: 0,
       max: 1,
-      admin: {
-        step: 0.05,
-        condition: (_, siblingData) => siblingData?.enableOverlay === true,
-      },
+      admin: { step: 0.05, condition: (_, s) => s?.enableOverlay === true },
     },
     {
       name: 'caption',

@@ -4,54 +4,116 @@ import Image from 'next/image'
 import Link from 'next/link'
 import RichText from '@/components/RichText'
 import { cn } from '@/utilities/ui'
-import { CMSLink } from '@/components/Link'
-import { Logo } from '@/components/Logo/Logo'
-import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Globe,
+  Facebook,
+  Instagram,
+  Linkedin,
+  Twitter,
+  Youtube,
+  Music,
+} from 'lucide-react'
 import { optimizedCloudinaryUrl } from '@/utilities/optimizedCloudinaryUrl'
+import { LanguageToggle } from '@/components/LanguageToggle'
 
 type FooterProps = { footer?: any; className?: string }
 
+// ----------------------------------------------------------------
+// SVG inline hook – strips hardcoded width/height so the logo scales naturally
+// ----------------------------------------------------------------
 const useInlineSvg = (url: string | undefined) => {
   const [svgContent, setSvgContent] = useState<string | null>(null)
+
   useEffect(() => {
     if (!url) return
     fetch(url)
-      .then((res) => (res.ok ? res.text() : null))
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch SVG')
+        return res.text()
+      })
+      .then((text) => {
+        // Remove hardcoded width/height from the root <svg> tag
+        const cleaned = text
+          .replace(/<svg([^>]*?)width="[^"]*"/, '<svg$1')
+          .replace(/<svg([^>]*?)height="[^"]*"/, '<svg$1')
+        // Ensure a viewBox exists (fallback to 0 0 500 500 if missing)
+        if (!/<svg[^>]*?viewBox="/i.test(cleaned)) {
+          return cleaned.replace(/<svg/, '<svg viewBox="0 0 500 500"')
+        }
+        return cleaned
+      })
       .then(setSvgContent)
-      .catch(() => {})
+      .catch(() => setSvgContent(null))
   }, [url])
+
   return svgContent
+}
+
+// Social icon map – matches the select options in the footer config
+const SOCIAL_ICONS: Record<string, any> = {
+  facebook: Facebook,
+  instagram: Instagram,
+  linkedin: Linkedin,
+  twitter: Twitter,
+  youtube: Youtube,
+  music: Music, // Lucide "Music" icon used for TikTok
+  globe: Globe,
 }
 
 export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
   if (!footer) return null
   const layout = footer.layout || 'simple'
 
+  // ------------------------------------------------------------------
+  // SIMPLE LAYOUT
+  // ------------------------------------------------------------------
   if (layout === 'simple') {
     const navItems = footer.navItems || []
     return (
       <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
         <div className="container py-8 gap-8 flex flex-col md:flex-row md:justify-between">
           <Link className="flex items-center" href="/">
-            <Logo />
+            {/* Logo placeholder – you can add your Logo component here */}
           </Link>
-          <div className="flex flex-col-reverse items-start md:flex-row gap-4 md:items-center">
-            <ThemeSelector />
-            <nav className="flex flex-col md:flex-row gap-4">
-              {navItems.map(({ link }: any, i: number) => (
-                <CMSLink className="text-white" key={i} {...link} />
-              ))}
-            </nav>
-          </div>
+          <nav className="flex flex-col md:flex-row gap-4">
+            {navItems.map((item: any, i: number) => (
+              <Link
+                key={i}
+                href={item.url || '#'}
+                target={item.newTab ? '_blank' : undefined}
+                className="text-white hover:text-[var(--color-primary)] transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </footer>
     )
   }
 
-  const { description, socialBadges = [], reachUs, mapEmbedUrl, copyright } = footer
+  // ------------------------------------------------------------------
+  // ADVANCED LAYOUT (multi‑column)
+  // ------------------------------------------------------------------
+  const {
+    description,
+    quickLinks = [],
+    services = [],
+    reachUs,
+    copyright,
+    socialBadges = [],
+    backgroundColor,
+    textColor,
+    iconColor,
+    mapEmbedUrl,
+  } = footer
+
+  // ----- Footer logo (uploaded in CMS) -----
   const logoValue = footer.logo
   const [logoMedia, setLogoMedia] = useState<any>(null)
-
   useEffect(() => {
     if (!logoValue) return
     if (typeof logoValue === 'object' && logoValue !== null) {
@@ -66,16 +128,22 @@ export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
   const isSvg = logoMedia?.mimeType === 'image/svg+xml' || logoMedia?.format === 'svg'
   const svgContent = useInlineSvg(isSvg ? logoMedia?.url : undefined)
 
+  // ---------------------------------------------------------------
+  // Logo renderer – responsive, never cropped
+  // ---------------------------------------------------------------
   const renderFooterLogo = () => {
     if (!logoMedia) return null
+
     if (isSvg && svgContent) {
       return (
         <div
-          className="[&>svg]:max-w-[200px] [&>svg]:h-auto"
+          className="[&>svg]:block [&>svg]:max-w-full [&>svg]:h-auto"
+          style={{ maxWidth: '200px' }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
       )
     }
+
     if (!isSvg && logoMedia?.url) {
       return (
         <Image
@@ -84,127 +152,184 @@ export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
           width={200}
           height={80}
           className="h-auto w-auto max-w-[200px]"
-          // unoptimized removed – Next.js will further compress if needed
         />
       )
     }
+
     return null
   }
 
+  // Resolve colours – fall back to theme variables when not set in CMS
+  const resolvedBg = backgroundColor || 'var(--bg-body)'
+  const resolvedText = textColor || 'var(--color-text)'
+  const resolvedIcon = iconColor || 'var(--color-primary)'
+
   return (
-    <footer className={cn('bg-[#040d10] pt-16', className)}>
-      <div className="max-w-7xl mx-auto px-6 md:px-10 lg:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 py-12">
-          <div className="footer-content">
-            {logoMedia && <div className="mb-6">{renderFooterLogo()}</div>}
+    <footer
+      className={cn('text-white', className)}
+      style={{ backgroundColor: resolvedBg, color: resolvedText }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* ── Brand column ── */}
+          <div>
+            {logoMedia && <div className="mb-4">{renderFooterLogo()}</div>}
+            {!logoMedia && (
+              <h3
+                className="text-3xl mb-4"
+                style={{ fontFamily: 'var(--font-heading)', color: resolvedIcon }}
+              >
+                Isame
+              </h3>
+            )}
             {description && (
-              <div className="text-white/80 text-sm mb-6">
-                <RichText data={description} enableGutter={false} />
+              <div className="text-sm mb-4" style={{ color: resolvedText }}>
+                <RichText data={description} enableGutter={false} enableProse={false} />
               </div>
             )}
-            {socialBadges.length > 0 && (
-              <ul className="flex gap-4 mt-4 flex-wrap">
-                {socialBadges.map((badge: any, idx: number) => (
-                  <li key={idx}>
-                    {badge.link ? (
-                      <a href={badge.link} target="_blank" rel="noopener noreferrer">
-                        {badge.image?.url && (
-                          <Image
-                            src={optimizedCloudinaryUrl(badge.image.url)}
-                            alt="Badge"
-                            width={80}
-                            height={80}
-                            className="h-auto w-auto max-w-[80px]"
-                            // unoptimized removed
-                          />
-                        )}
-                      </a>
-                    ) : (
-                      badge.image?.url && (
-                        <Image
-                          src={optimizedCloudinaryUrl(badge.image.url)}
-                          alt="Badge"
-                          width={80}
-                          height={80}
-                          className="h-auto w-auto max-w-[80px]"
-                          // unoptimized removed
-                        />
-                      )
-                    )}
+
+            {/* Language switcher */}
+            <LanguageToggle />
+
+            {/* Social media icons (replaces old image badges) */}
+            {socialBadges?.length > 0 && (
+              <div className="flex gap-3 mt-4">
+                {socialBadges.map((badge: any, i: number) => {
+                  const IconComponent = SOCIAL_ICONS[badge.icon] || Globe
+                  return (
+                    <a
+                      key={i}
+                      href={badge.url || '#'}
+                      target={badge.newTab ? '_blank' : undefined}
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-opacity"
+                      style={{ color: resolvedIcon }}
+                      aria-label={badge.icon}
+                    >
+                      <IconComponent className="w-5 h-5" />
+                    </a>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Optional map embed */}
+            {mapEmbedUrl && (
+              <div
+                className="rounded-lg overflow-hidden border-2 mt-6"
+                style={{ borderColor: resolvedIcon }}
+              >
+                <iframe
+                  src={mapEmbedUrl}
+                  width="100%"
+                  height="200"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Location Map"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* ── Quick Links column ── */}
+          {quickLinks.length > 0 && (
+            <div>
+              <h4 className="mb-4" style={{ color: resolvedIcon }}>
+                Quick Links
+              </h4>
+              <ul className="space-y-2 text-sm">
+                {quickLinks.map((link: any, i: number) => (
+                  <li key={i}>
+                    <Link
+                      href={link.url || '#'}
+                      target={link.newTab ? '_blank' : undefined}
+                      className="hover:opacity-80 transition-opacity"
+                      style={{ color: resolvedText }}
+                    >
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
-            )}
-          </div>
-          <div className="footer-content">
-            {reachUs?.heading && (
-              <h2 className="font-serif text-3xl italic text-white mb-4">{reachUs.heading}</h2>
-            )}
-            <div className="space-y-3 text-white/80 text-sm">
+            </div>
+          )}
+
+          {/* ── Services column ── */}
+          {services.length > 0 && (
+            <div>
+              <h4 className="mb-4" style={{ color: resolvedIcon }}>
+                Our Services
+              </h4>
+              <ul className="space-y-2 text-sm" style={{ color: resolvedText }}>
+                {services.map((service: any, i: number) => (
+                  <li key={i}>{service.label}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* ── Contact column ── */}
+          <div>
+            <h4 className="mb-4" style={{ color: resolvedIcon }}>
+              Contact Us
+            </h4>
+            <ul className="space-y-3 text-sm">
+              {reachUs?.location && (
+                <li className="flex items-start gap-2" style={{ color: resolvedText }}>
+                  <MapPin className="w-4 h-4 mt-1 flex-shrink-0" style={{ color: resolvedIcon }} />
+                  <span>{reachUs.location}</span>
+                </li>
+              )}
               {reachUs?.phone && (
-                <p>
-                  Tel:{' '}
+                <li className="flex items-center gap-2" style={{ color: resolvedText }}>
+                  <Phone className="w-4 h-4 flex-shrink-0" style={{ color: resolvedIcon }} />
                   <a
                     href={`tel:${reachUs.phone.replace(/\s/g, '')}`}
-                    className="hover:text-[#ffd28d] transition"
+                    className="hover:opacity-80 transition-opacity"
+                    style={{ color: resolvedText }}
                   >
                     {reachUs.phone}
                   </a>
-                </p>
+                </li>
               )}
               {reachUs?.email && (
-                <p>
-                  Email:{' '}
-                  <a href={`mailto:${reachUs.email}`} className="hover:text-[#ffd28d] transition">
+                <li className="flex items-center gap-2" style={{ color: resolvedText }}>
+                  <Mail className="w-4 h-4 flex-shrink-0" style={{ color: resolvedIcon }} />
+                  <a
+                    href={`mailto:${reachUs.email}`}
+                    className="hover:opacity-80 transition-opacity"
+                    style={{ color: resolvedText }}
+                  >
                     {reachUs.email}
                   </a>
-                </p>
+                </li>
               )}
-              {reachUs?.hours && <p>Hours: {reachUs.hours}</p>}
-              {reachUs?.partnerHotel?.link && (
-                <p className="text-[#ffd28d] font-bold pt-4">
-                  {reachUs.partnerHotel.label || 'Book a room at our Flagship Hotel.'}
-                  <a
-                    href={reachUs.partnerHotel.link}
-                    target={reachUs.partnerHotel.newTab ? '_blank' : undefined}
-                    rel="noopener noreferrer"
-                    className="block mt-2"
-                  >
-                    {reachUs.partnerHotel.logo?.url && (
-                      <Image
-                        src={optimizedCloudinaryUrl(reachUs.partnerHotel.logo.url)}
-                        alt="Partner hotel logo"
-                        width={150}
-                        height={60}
-                        className="h-auto w-auto max-w-[150px]"
-                        // unoptimized removed
-                      />
-                    )}
-                  </a>
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="footer-content">
-            {mapEmbedUrl && (
-              <iframe
-                src={mapEmbedUrl}
-                width="100%"
-                height="300"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="rounded-lg"
-              />
-            )}
+              <li className="flex items-center gap-2" style={{ color: resolvedText }}>
+                <Globe className="w-4 h-4 flex-shrink-0" style={{ color: resolvedIcon }} />
+                <span>Hablamos Español</span>
+              </li>
+            </ul>
           </div>
         </div>
-        {copyright && (
-          <div className="border-t border-white/10 text-center text-white/60 text-sm py-4">
-            {copyright}
-          </div>
-        )}
+
+        {/* Bottom bar */}
+        <div
+          className="border-t border-gray-700 mt-8 pt-8 text-center text-sm"
+          style={{ color: resolvedText }}
+        >
+          {copyright ? (
+            <p>{copyright}</p>
+          ) : (
+            <>
+              <p>&copy; {new Date().getFullYear()} Isame Debt Collection. All rights reserved.</p>
+              <p className="mt-2">
+                100% Belizean-Owned • Female-Led • Ethical Practices Guaranteed
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </footer>
   )

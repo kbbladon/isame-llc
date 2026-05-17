@@ -1,10 +1,13 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useHeaderTheme } from '@/providers/HeaderTheme'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { Phone } from 'lucide-react'
+import { useEffect, useState, useTransition } from 'react'
+import { Phone, Globe } from 'lucide-react'
+import { useLocale } from '@/providers/Language'
+import { setLocaleCookie } from '@/actions/locale'
 
 type HeaderProps = { settings?: any }
 
@@ -122,6 +125,19 @@ export const Header: React.FC<HeaderProps> = ({ settings }) => {
   const toggleMobileParent = (index: number) =>
     setOpenMobileParent(openMobileParent === index ? null : index)
 
+  // ---- Smooth locale switching (server action + transition) ----
+  const { locale, setLocale } = useLocale()
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+
+  const changeLocale = (nextLocale: 'en' | 'es') => {
+    startTransition(async () => {
+      setLocale(nextLocale) // update React context
+      await setLocaleCookie(nextLocale) // set cookie on the server
+      router.refresh() // soft reload – instant feedback
+    })
+  }
+
   // Updated logo render function — no forced aspect ratio
   const renderLogo = () => {
     if (!logoMedia) return null
@@ -163,14 +179,14 @@ export const Header: React.FC<HeaderProps> = ({ settings }) => {
     <>
       <header
         className={`
-    sticky top-0 md:fixed md:top-0 md:left-0 md:right-0
-    w-full z-50 transition-all duration-500
-    ${
-      isScrolled
-        ? 'bg-black/80 shadow-sm border-b border-[var(--color-primary)]' // solid sticky state
-        : 'bg-black/50 backdrop-blur-xl' // frosted glass
-    }
-  `}
+          sticky top-0 md:fixed md:top-0 md:left-0 md:right-0
+          w-full z-50 transition-all duration-500
+          ${
+            isScrolled
+              ? 'bg-black/80 shadow-sm border-b border-[var(--color-primary)]' // solid sticky state
+              : 'bg-black/50 backdrop-blur-xl' // frosted glass
+          }
+        `}
       >
         {/* Gradient that goes from dark at the top to transparent at the bottom */}
         <div
@@ -267,19 +283,81 @@ export const Header: React.FC<HeaderProps> = ({ settings }) => {
                 </nav>
               </div>
 
-              <div className="shrink-0">
+              {/* Right side: CTA + Language Toggle (desktop) */}
+              <div className="shrink-0 flex items-center gap-3">
                 {cta?.ctaLink && (
-                  <div className="hidden lg:block book-button">
+                  <div className="hidden lg:block">
                     <Link
                       href={getLinkHref(cta.ctaLink)}
                       target={cta.ctaLink?.newTab ? '_blank' : undefined}
                       rel={cta.ctaLink?.newTab ? 'noopener noreferrer' : undefined}
-                      className="btn-book-now whitespace-nowrap text-xs md:text-sm px-4 py-2"
+                      className="btn-book-now whitespace-nowrap text-xs md:text-sm px-4 py-2 rounded-lg transition-all hover:shadow-lg"
+                      style={{ backgroundColor: primaryColor, color: '#1A1A1A' }}
                     >
                       {cta.ctaLink?.label}
                     </Link>
                   </div>
                 )}
+
+                {/* 🌐 Desktop Language Toggle (with spinner) */}
+                <button
+                  onClick={() => changeLocale(locale === 'en' ? 'es' : 'en')}
+                  disabled={isPending}
+                  className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 hover:border-white/40 transition-colors text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isPending ? (
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                  ) : (
+                    <Globe className="w-4 h-4" />
+                  )}
+                  <span>{locale === 'en' ? 'ES' : 'EN'}</span>
+                </button>
+
+                {/* 🌐 Mobile Language Toggle (with spinner) – moved slightly down and closer to hamburger */}
+                <button
+                  onClick={() => changeLocale(locale === 'en' ? 'es' : 'en')}
+                  disabled={isPending}
+                  className="lg:hidden inline-flex items-center gap-1 px-2 py-1 rounded-full border border-white/20 hover:border-white/40 transition-colors text-white text-xs font-medium mt-0.5 -mr-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Switch language"
+                >
+                  {isPending ? (
+                    <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                  ) : (
+                    <Globe className="w-3.5 h-3.5" />
+                  )}
+                  <span>{locale === 'en' ? 'ES' : 'EN'}</span>
+                </button>
+
                 {/* Mobile Hamburger Button */}
                 <div className="lg:hidden">
                   <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-white">
@@ -309,7 +387,7 @@ export const Header: React.FC<HeaderProps> = ({ settings }) => {
         </div>
       </header>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer (toggle removed) */}
       <div
         className={`fixed inset-0 z-50 transition-transform duration-500 lg:hidden ${
           isMenuOpen ? 'translate-x-0' : 'translate-x-full'
@@ -388,6 +466,21 @@ export const Header: React.FC<HeaderProps> = ({ settings }) => {
                 </div>
               )
             })}
+
+            {/* CTA Button in Mobile Drawer */}
+            {cta?.ctaLink && (
+              <Link
+                href={getLinkHref(cta.ctaLink)}
+                target={cta.ctaLink?.newTab ? '_blank' : undefined}
+                rel={cta.ctaLink?.newTab ? 'noopener noreferrer' : undefined}
+                onClick={() => setIsMenuOpen(false)}
+                className="px-6 py-2 rounded-lg transition-all hover:shadow-lg text-center text-lg font-medium"
+                style={{ backgroundColor: primaryColor, color: '#1A1A1A' }}
+              >
+                {cta.ctaLink?.label}
+              </Link>
+            )}
+
             {phoneNumber && (
               <a
                 href={`tel:${cleanPhone}`}

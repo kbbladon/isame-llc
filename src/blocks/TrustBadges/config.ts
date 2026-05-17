@@ -1,12 +1,13 @@
 import type { Block } from 'payload'
 
 export const TrustBadgesBlock: Block = {
-  slug: 'trust-badges', // matches your existing block slug
+  slug: 'trust-badges',
   labels: {
     singular: 'Trust Badges',
     plural: 'Trust Badges',
   },
   fields: [
+    // Section background
     {
       name: 'backgroundColor',
       type: 'text',
@@ -16,6 +17,17 @@ export const TrustBadgesBlock: Block = {
         description: 'Background colour for the entire trust badges section.',
       },
     },
+    // Section‑wide text colour (applies to all badges unless overridden)
+    {
+      name: 'textColor',
+      type: 'text',
+      label: 'Badge Text Color',
+      admin: {
+        components: { Field: '@/components/ThemeColorPicker#default' },
+        description: 'Leave empty to use the theme text colour.',
+      },
+    },
+    // Badges array
     {
       name: 'badges',
       type: 'array',
@@ -57,8 +69,19 @@ export const TrustBadgesBlock: Block = {
             description: 'Leave empty to use the theme primary colour.',
           },
         },
+        // Per‑badge text colour override
+        {
+          name: 'textColor',
+          type: 'text',
+          label: 'Badge Text Color',
+          admin: {
+            components: { Field: '@/components/ThemeColorPicker#default' },
+            description: 'Optional. Overrides the section‑wide text colour for this badge.',
+          },
+        },
       ],
     },
+    // Columns
     {
       name: 'columns',
       type: 'select',
