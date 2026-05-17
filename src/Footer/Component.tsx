@@ -74,11 +74,11 @@ export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
     const navItems = footer.navItems || []
     return (
       <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
-        <div className="container py-8 gap-8 flex flex-col md:flex-row md:justify-between">
+        <div className="container py-8 gap-8 flex flex-col items-center md:flex-row md:justify-between">
           <Link className="flex items-center" href="/">
             {/* Logo placeholder – you can add your Logo component here */}
           </Link>
-          <nav className="flex flex-col md:flex-row gap-4">
+          <nav className="flex flex-col items-center md:flex-row gap-4">
             {navItems.map((item: any, i: number) => (
               <Link
                 key={i}
@@ -138,7 +138,7 @@ export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
       return (
         <div
           className="[&>svg]:block [&>svg]:max-w-full [&>svg]:h-auto"
-          style={{ maxWidth: '200px' }}
+          style={{ maxWidth: '200px', minWidth: '100px' }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
       )
@@ -170,9 +170,10 @@ export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
       style={{ backgroundColor: resolvedBg, color: resolvedText }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        {/* 👇 Grid – 1 col on mobile, 2 cols on small screens, 4 cols on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center sm:text-left">
           {/* ── Brand column ── */}
-          <div>
+          <div className="flex flex-col items-center sm:items-start">
             {logoMedia && <div className="mb-4">{renderFooterLogo()}</div>}
             {!logoMedia && (
               <h3
@@ -191,7 +192,7 @@ export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
             {/* Language switcher */}
             <LanguageToggle />
 
-            {/* Social media icons (replaces old image badges) */}
+            {/* Social media icons */}
             {socialBadges?.length > 0 && (
               <div className="flex gap-3 mt-4">
                 {socialBadges.map((badge: any, i: number) => {
@@ -216,7 +217,7 @@ export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
             {/* Optional map embed */}
             {mapEmbedUrl && (
               <div
-                className="rounded-lg overflow-hidden border-2 mt-6"
+                className="rounded-lg overflow-hidden border-2 mt-6 w-full"
                 style={{ borderColor: resolvedIcon }}
               >
                 <iframe
@@ -277,13 +278,19 @@ export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
             </h4>
             <ul className="space-y-3 text-sm">
               {reachUs?.location && (
-                <li className="flex items-start gap-2" style={{ color: resolvedText }}>
+                <li
+                  className="flex items-start gap-2 justify-center sm:justify-start"
+                  style={{ color: resolvedText }}
+                >
                   <MapPin className="w-4 h-4 mt-1 flex-shrink-0" style={{ color: resolvedIcon }} />
                   <span>{reachUs.location}</span>
                 </li>
               )}
               {reachUs?.phone && (
-                <li className="flex items-center gap-2" style={{ color: resolvedText }}>
+                <li
+                  className="flex items-center gap-2 justify-center sm:justify-start"
+                  style={{ color: resolvedText }}
+                >
                   <Phone className="w-4 h-4 flex-shrink-0" style={{ color: resolvedIcon }} />
                   <a
                     href={`tel:${reachUs.phone.replace(/\s/g, '')}`}
@@ -295,7 +302,10 @@ export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
                 </li>
               )}
               {reachUs?.email && (
-                <li className="flex items-center gap-2" style={{ color: resolvedText }}>
+                <li
+                  className="flex items-center gap-2 justify-center sm:justify-start"
+                  style={{ color: resolvedText }}
+                >
                   <Mail className="w-4 h-4 flex-shrink-0" style={{ color: resolvedIcon }} />
                   <a
                     href={`mailto:${reachUs.email}`}
@@ -306,7 +316,10 @@ export const Footer: React.FC<FooterProps> = ({ footer, className }) => {
                   </a>
                 </li>
               )}
-              <li className="flex items-center gap-2" style={{ color: resolvedText }}>
+              <li
+                className="flex items-center gap-2 justify-center sm:justify-start"
+                style={{ color: resolvedText }}
+              >
                 <Globe className="w-4 h-4 flex-shrink-0" style={{ color: resolvedIcon }} />
                 <span>Hablamos Español</span>
               </li>

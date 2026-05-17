@@ -69,6 +69,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Fetch globals in the correct language
   const settings = await payload.findGlobal({ slug: 'settings', locale })
   const footer = await payload.findGlobal({ slug: 'footer', locale })
+  const header = await payload.findGlobal({ slug: 'header', locale }) // 👈 new
 
   // ----- THEME PRESET -----
   const themePreset = settings?.themePreset || 'isame'
@@ -227,7 +228,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <ThemeInit />
             <Providers>
               <AdminBar adminBarProps={{ preview: isEnabled }} />
-              <Header settings={settings} />
+              {/* 👇 Now passes both settings and header */}
+              <Header settings={settings} header={header} />
               <main className="w-full">{children}</main>
               <Footer footer={footer} />
             </Providers>

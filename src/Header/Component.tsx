@@ -9,7 +9,10 @@ import { Phone, Globe } from 'lucide-react'
 import { useLocale } from '@/providers/Language'
 import { setLocaleCookie } from '@/actions/locale'
 
-type HeaderProps = { settings?: any }
+type HeaderProps = {
+  settings?: any
+  header?: any // 👈 added header prop
+}
 
 // ----- robust href & label resolvers (unchanged) -----
 const getLinkHref = (linkItem: any): string => {
@@ -61,7 +64,7 @@ const useInlineSvg = (url: string | undefined) => {
   return { svgContent }
 }
 
-export const Header: React.FC<HeaderProps> = ({ settings }) => {
+export const Header: React.FC<HeaderProps> = ({ settings, header }) => {
   const { setHeaderTheme } = useHeaderTheme()
   const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
@@ -70,10 +73,12 @@ export const Header: React.FC<HeaderProps> = ({ settings }) => {
 
   const branding = settings?.branding || {}
   const colors = settings?.colors || {}
-  const navItems = settings?.navItems || []
+  // 👇 Use header.navItems for navigation; fallback to settings.navItems just in case
+  const navItems = header?.navItems || settings?.navItems || []
   const cta = settings?.ctaButton
   const phoneNumber = settings?.phoneNumber
-
+  console.log('🚦 header prop:', header)
+  console.log('🚦 navItems used:', navItems)
   // Extract global colors from settings
   const primaryColor = colors.primaryColor || '#FFD700'
   const secondaryColor = colors.secondaryColor || '#E6B800'
@@ -496,5 +501,4 @@ export const Header: React.FC<HeaderProps> = ({ settings }) => {
     </>
   )
 }
-
 export default Header
